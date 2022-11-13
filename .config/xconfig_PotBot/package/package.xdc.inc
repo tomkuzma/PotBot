@@ -1,0 +1,12 @@
+package.xdc
+package.xs
+package/xconfig_PotBot.sch
+package/.vers_g200
+package/.vers_r200
+package/.vers_b200
+package/.xdc-K04
+package/xconfig_PotBot.java
+package/xconfig_PotBot.class
+package/package_xconfig_PotBot.c
+package/package.defs.h
+package/xconfig_PotBot.ccs

@@ -1,0 +1,1 @@
+"./F2802x_GlobalVariableDefs.obj" "./adc.obj" "./dev_init.obj" "./main.obj" "./servo.obj" "../F2802x_Headers_BIOS.cmd" "../TMS320F28027.cmd" -l"configPkg/linker.cmd" -llibc.a 
