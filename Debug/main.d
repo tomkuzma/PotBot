@@ -123,6 +123,33 @@ main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IInstance.
 main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IGateProvider.h
 main.obj: C:/ti/bios_6_83_00_18/packages/ti/sysbios/BIOS__epilogue.h
 main.obj: C:/ti/bios_6_83_00_18/packages/ti/sysbios/package/BIOS_RtsGateProxy.h
+main.obj: C:/ti/bios_6_83_00_18/packages/ti/sysbios/knl/Swi.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IInstance.h
+main.obj: C:/ti/bios_6_83_00_18/packages/ti/sysbios/knl/package/package.defs.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Error.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Assert.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Diags.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Log.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Log__prologue.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Error.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Main.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Diags.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Diags.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Text.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Log__epilogue.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/bios_6_83_00_18/packages/ti/sysbios/knl/Queue.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IInstance.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h
+main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h
 main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/SysStd.h
 main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h
 main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/ISystemSupport.h
@@ -372,6 +399,60 @@ C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IGateProvider.h:
 C:/ti/bios_6_83_00_18/packages/ti/sysbios/BIOS__epilogue.h:
 
 C:/ti/bios_6_83_00_18/packages/ti/sysbios/package/BIOS_RtsGateProxy.h:
+
+C:/ti/bios_6_83_00_18/packages/ti/sysbios/knl/Swi.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IInstance.h:
+
+C:/ti/bios_6_83_00_18/packages/ti/sysbios/knl/package/package.defs.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Error.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Assert.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Diags.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Log.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Log__prologue.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Error.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Main.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Diags.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Diags.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Text.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Log__epilogue.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/bios_6_83_00_18/packages/ti/sysbios/knl/Queue.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/Types.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IInstance.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h:
+
+C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/IModule.h:
 
 C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/SysStd.h:
 

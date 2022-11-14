@@ -20,14 +20,11 @@
 #include <Headers/F2802x_device.h>
 
 #pragma CODE_SECTION(InitFlash, "ramfuncs");
-#define Device_cal (void   (*)(void))0x3D7C80
 
 void DeviceInit(void);
-void PieCntlInit(void);
-void PieVectTableInit(void);
-void WDogDisable(void);
-void PLLset(Uint16);
 void ISR_ILLEGAL(void);
+void InitFlash(void);
+void MemCopy(Uint16 *SourceAddr, Uint16* SourceEndAddr, Uint16* DestAddr);
 
 //--------------------------------------------------------------------
 //  Configure Device for target Application Here
@@ -37,33 +34,9 @@ void ISR_ILLEGAL(void);
 void DeviceInit(void)
 {
     //WDogDisable();    // Disable the watchdog initially
-    DINT;           // Global Disable all Interrupts
-    IER = 0x0000;   // Disable CPU interrupts
-    IFR = 0x0000;   // Clear all CPU interrupt flags
-
-
-// The Device_cal function, which copies the ADC & oscillator calibration values
-// from TI reserved OTP into the appropriate trim registers, occurs automatically
-// in the Boot ROM. If the boot ROM code is bypassed during the debug process, the
-// following function MUST be called for the ADC and oscillators to function according
-// to specification.
-    EALLOW;
-    SysCtrlRegs.PCLKCR0.bit.ADCENCLK = 1; // Enable ADC peripheral clock
-    (*Device_cal)();                      // Auto-calibrate from TI OTP
-    SysCtrlRegs.PCLKCR0.bit.ADCENCLK = 0; // Return ADC clock to original state
-    EDIS;
-
-
-// Switch to Internal Oscillator 1 and turn off all other clock
-// sources to minimize power consumption
-
-    EALLOW;
-    SysCtrlRegs.CLKCTL.bit.INTOSC1OFF = 0;
-    SysCtrlRegs.CLKCTL.bit.OSCCLKSRCSEL=0;  // Clk Src = INTOSC1
-    SysCtrlRegs.CLKCTL.bit.XCLKINOFF=1;     // Turn off XCLKIN
-    SysCtrlRegs.CLKCTL.bit.XTALOSCOFF=1;    // Turn off XTALOSC
-    SysCtrlRegs.CLKCTL.bit.INTOSC2OFF=1;    // Turn off INTOSC2
-    EDIS;
+ //   DINT;           // Global Disable all Interrupts
+ //   IER = 0x0000;   // Disable CPU interrupts
+ //   IFR = 0x0000;   // Clear all CPU interrupt flags
 
 
 // SYSTEM CLOCK speed based on internal oscillator = 10 MHz
@@ -79,12 +52,6 @@ void DeviceInit(void)
 // 0x3 =  15    MHz     (3)
 // 0x2 =  10    MHz     (2)
 
-    PLLset(0xC);    // choose from options above
-
-// Initialise interrupt controller and Vector Table
-// to defaults for now. Application ISR mapping done later.
-    PieCntlInit();
-    PieVectTableInit();
 
    EALLOW; // below registers are "protected", allow access.
 
@@ -112,14 +79,7 @@ void DeviceInit(void)
    SysCtrlRegs.PCLKCR0.bit.SCIAENCLK = 1;   // SCI-A
    //------------------------------------------------
    SysCtrlRegs.PCLKCR1.bit.ECAP1ENCLK = 0;  //eCAP1
-//   //------------------------------------------------
-//   SysCtrlRegs.PCLKCR1.bit.EPWM1ENCLK = 1;  // ePWM1
-//   SysCtrlRegs.PCLKCR1.bit.EPWM2ENCLK = 0;  // ePWM2
-//   SysCtrlRegs.PCLKCR1.bit.EPWM3ENCLK = 0;  // ePWM3
-//   SysCtrlRegs.PCLKCR1.bit.EPWM4ENCLK = 0;  // ePWM4
-   //------------------------------------------------
-   //SysCtrlRegs.PCLKCR0.bit.TBCLKSYNC = 1;   // Enable TBCLK
-   //------------------------------------------------
+//------------------------------------------------
 
 
    //EPWM Clock 1 Setup
@@ -171,7 +131,7 @@ void DeviceInit(void)
 //--------------------------------------------------------------------------------------
     //Changed this to be output = low at beginning //JB
 
-*/
+
 
 //  GPIO-02 - PIN FUNCTION = --Spare--
     GpioCtrlRegs.GPAMUX1.bit.GPIO2 = 0;     // 0=GPIO,  1=EPWM2A,  2=Resv,  3=Resv
@@ -211,6 +171,10 @@ void DeviceInit(void)
 //--------------------------------------------------------------------------------------
 //  GPIO-08 - GPIO-11 Do Not Exist
 //--------------------------------------------------------------------------------------
+ *
+ *
+ */
+
 //  GPIO-12 - PIN FUNCTION = --Spare--
     GpioCtrlRegs.GPAMUX1.bit.GPIO12 = 0;    // 0=GPIO,  1=TZ1,  2=SCITX-A,  3=Resv
     GpioCtrlRegs.GPADIR.bit.GPIO12 = 0;     // 1=OUTput,  0=INput
@@ -286,146 +250,6 @@ void DeviceInit(void)
 
 
 
-//============================================================================
-// NOTE:
-// IN MOST APPLICATIONS THE FUNCTIONS AFTER THIS POINT CAN BE LEFT UNCHANGED
-// THE USER NEED NOT REALLY UNDERSTAND THE BELOW CODE TO SUCCESSFULLY RUN THIS
-// APPLICATION.
-//============================================================================
-
-void WDogDisable(void)
-{
-    EALLOW;
-    SysCtrlRegs.WDCR= 0x0068;
-    EDIS;
-}
-
-// This function initializes the PLLCR register.
-//void InitPll(Uint16 val, Uint16 clkindiv)
-void PLLset(Uint16 val)
-{
-   volatile Uint16 iVol;
-
-   // Make sure the PLL is not running in limp mode
-   if (SysCtrlRegs.PLLSTS.bit.MCLKSTS != 0)
-   {
-      EALLOW;
-      // OSCCLKSRC1 failure detected. PLL running in limp mode.
-      // Re-enable missing clock logic.
-      SysCtrlRegs.PLLSTS.bit.MCLKCLR = 1;
-      EDIS;
-      // Replace this line with a call to an appropriate
-      // SystemShutdown(); function.
-      asm("        ESTOP0");     // Uncomment for debugging purposes
-   }
-
-   // DIVSEL MUST be 0 before PLLCR can be changed from
-   // 0x0000. It is set to 0 by an external reset XRSn
-   // This puts us in 1/4
-   if (SysCtrlRegs.PLLSTS.bit.DIVSEL != 0)
-   {
-       EALLOW;
-       SysCtrlRegs.PLLSTS.bit.DIVSEL = 0;
-       EDIS;
-   }
-
-   // Change the PLLCR
-   if (SysCtrlRegs.PLLCR.bit.DIV != val)
-   {
-
-      EALLOW;
-      // Before setting PLLCR turn off missing clock detect logic
-      SysCtrlRegs.PLLSTS.bit.MCLKOFF = 1;
-      SysCtrlRegs.PLLCR.bit.DIV = val;
-      EDIS;
-
-      // Optional: Wait for PLL to lock.
-      // During this time the CPU will switch to OSCCLK/2 until
-      // the PLL is stable.  Once the PLL is stable the CPU will
-      // switch to the new PLL value.
-      //
-      // This time-to-lock is monitored by a PLL lock counter.
-      //
-      // Code is not required to sit and wait for the PLL to lock.
-      // However, if the code does anything that is timing critical,
-      // and requires the correct clock be locked, then it is best to
-      // wait until this switching has completed.
-
-      // Wait for the PLL lock bit to be set.
-      // The watchdog should be disabled before this loop, or fed within
-      // the loop via ServiceDog().
-
-      // Uncomment to disable the watchdog
-      WDogDisable();
-
-      while(SysCtrlRegs.PLLSTS.bit.PLLLOCKS != 1) {}
-
-      EALLOW;
-      SysCtrlRegs.PLLSTS.bit.MCLKOFF = 0;
-      EDIS;
-    }
-
-      //divide down SysClk by 2 to increase stability
-    EALLOW;
-    SysCtrlRegs.PLLSTS.bit.DIVSEL = 2;
-    EDIS;
-}
-
-
-// This function initializes the PIE control registers to a known state.
-//
-void PieCntlInit(void)
-{
-    // Disable Interrupts at the CPU level:
-    DINT;
-
-    // Disable the PIE
-    PieCtrlRegs.PIECTRL.bit.ENPIE = 0;
-
-    // Clear all PIEIER registers:
-    PieCtrlRegs.PIEIER1.all = 0;
-    PieCtrlRegs.PIEIER2.all = 0;
-    PieCtrlRegs.PIEIER3.all = 0;
-    PieCtrlRegs.PIEIER4.all = 0;
-    PieCtrlRegs.PIEIER5.all = 0;
-    PieCtrlRegs.PIEIER6.all = 0;
-    PieCtrlRegs.PIEIER7.all = 0;
-    PieCtrlRegs.PIEIER8.all = 0;
-    PieCtrlRegs.PIEIER9.all = 0;
-    PieCtrlRegs.PIEIER10.all = 0;
-    PieCtrlRegs.PIEIER11.all = 0;
-    PieCtrlRegs.PIEIER12.all = 0;
-
-    // Clear all PIEIFR registers:
-    PieCtrlRegs.PIEIFR1.all = 0;
-    PieCtrlRegs.PIEIFR2.all = 0;
-    PieCtrlRegs.PIEIFR3.all = 0;
-    PieCtrlRegs.PIEIFR4.all = 0;
-    PieCtrlRegs.PIEIFR5.all = 0;
-    PieCtrlRegs.PIEIFR6.all = 0;
-    PieCtrlRegs.PIEIFR7.all = 0;
-    PieCtrlRegs.PIEIFR8.all = 0;
-    PieCtrlRegs.PIEIFR9.all = 0;
-    PieCtrlRegs.PIEIFR10.all = 0;
-    PieCtrlRegs.PIEIFR11.all = 0;
-    PieCtrlRegs.PIEIFR12.all = 0;
-}
-
-
-void PieVectTableInit(void)
-{
-    int16 i;
-    PINT *Dest = &PieVectTable.TINT1;
-
-    EALLOW;
-    for(i=0; i < 115; i++)
-    *Dest++ = &ISR_ILLEGAL;
-    EDIS;
-
-    // Enable the PIE Vector Table
-    PieCtrlRegs.PIECTRL.bit.ENPIE = 1;
-}
-
 interrupt void ISR_ILLEGAL(void)   // Illegal operation TRAP
 {
   // Insert ISR Code here
@@ -500,3 +324,7 @@ void MemCopy(Uint16 *SourceAddr, Uint16* SourceEndAddr, Uint16* DestAddr)
 //===========================================================================
 // End of file.
 //===========================================================================
+
+
+
+

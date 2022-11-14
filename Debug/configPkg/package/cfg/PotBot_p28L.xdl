@@ -92,9 +92,9 @@
 
 /* Content from ti.sysbios.hal (null): */
 
-/* Content from ti.sysbios.family.c28 (null): */
-
 /* Content from ti.sysbios.knl (null): */
+
+/* Content from ti.sysbios.family.c28 (null): */
 
 /* Content from ti.sysbios.gates (null): */
 

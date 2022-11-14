@@ -25,9 +25,12 @@ int16 __adc_c_temp_offset;
 // Return: none
 //***************************//
 void adc_init(int channels, bool temp_enable) {
+
     EALLOW;
 
-    SysCtrlRegs.PCLKCR0.bit.ADCENCLK = 1;    // ADC enable clock
+    SysCtrlRegs.PCLKCR0.bit.ADCENCLK = 1; // Enable ADC peripheral clock
+    (*Device_cal)();
+
     AdcRegs.ADCCTL1.all = 0x00e0; //simultaneously power up ADC's analog circuitry, bandgap, and reference buffer
     AdcRegs.ADCCTL1.bit.INTPULSEPOS = 1; //pulse at end of conversion
     AdcRegs.ADCCTL1.bit.ADCENABLE = 1; //Enable ADC
@@ -75,8 +78,8 @@ void adc_init(int channels, bool temp_enable) {
         AdcRegs.ADCSOC15CTL.bit.CHSEL = 5; // Assign last ADC channel to temperature sensor
         AdcRegs.ADCSOC15CTL.bit.ACQPS = 0x6; // Minimum window
 
-        AdcRegs.INTSEL9N10.bit.INT9SEL = 15; // Connect EOC15 -> ADCINT5
-        AdcRegs.INTSEL9N10.bit.INT9E = 1; // Enable ADC EOC Interrupt
+        AdcRegs.INTSEL7N8.bit.INT8SEL = 15; // Connect EOC15 -> ADCINT5
+        AdcRegs.INTSEL7N8.bit.INT8E = 1; // Enable ADC EOC Interrupt
 
         __adc_c_temp_slope = getTempSlope(); // Temp slope for equation
         __adc_c_temp_offset = getTempOffset(); // Temp offset for equation
@@ -138,37 +141,33 @@ int16_t adc_sample(int channel, bool soc) {
         if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC0=1; //Start conversion
         while(AdcRegs.ADCINTFLG.bit.ADCINT1==0) {} //Wait for eoc
-        AdcRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //Clear flag
         }
+        AdcRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //Clear flag
         return AdcResult.ADCRESULT0; // Return adc result channel 0
-        break;
     case 1:
         //If Soc is true, start conversion
         if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC1=1; //Start conversion
         while(AdcRegs.ADCINTFLG.bit.ADCINT2==0) {} //Wait for eoc
-        AdcRegs.ADCINTFLGCLR.bit.ADCINT2 = 1; //Clear flag
         }
+        AdcRegs.ADCINTFLGCLR.bit.ADCINT2 = 1; //Clear flag
         return AdcResult.ADCRESULT1; // Return adc result channel 1
-        break;
     case 2:
         //If Soc is true, start conversion
         if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC2=1; //Start conversion
         while(AdcRegs.ADCINTFLG.bit.ADCINT3==0) {} //Wait for eoc
-        AdcRegs.ADCINTFLGCLR.bit.ADCINT3 = 1; //Clear flag
         }
+        AdcRegs.ADCINTFLGCLR.bit.ADCINT3 = 1; //Clear flag
         return AdcResult.ADCRESULT2; // Return adc result channel 2
-        break;
     case 3:
         //If Soc is true, start conversion
         if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC3=1; //Start conversion
         while(AdcRegs.ADCINTFLG.bit.ADCINT4==0) {} //Wait for eoc
-        AdcRegs.ADCINTFLGCLR.bit.ADCINT4 = 1; //Clear flag
         }
+        AdcRegs.ADCINTFLGCLR.bit.ADCINT4 = 1; //Clear flag
         return AdcResult.ADCRESULT3; // Return adc result channel 0
-        break;
     default:
         break;
     }
@@ -191,9 +190,13 @@ int32 temp_sample(bool soc) {
     //If soc is true, start conversion
     if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC15 = 1; // soc
-        while(AdcRegs.ADCINTFLG.bit.ADCINT9==0); // wait for eoc
-        AdcRegs.ADCINTFLGCLR.bit.ADCINT9 = 1; // clear interrupt flag for adc
+        while(AdcRegs.ADCINTFLG.bit.ADCINT8==0); // wait for eoc
     }
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT8 = 1; // clear interrupt flag for adc
     return (int32)(AdcResult.ADCRESULT15 - __adc_c_temp_offset) * (int32)__adc_c_temp_slope; // return converted temperature
 
+}
+
+void temp_soc(void) {
+    AdcRegs.ADCSOCFRC1.bit.SOC15 = 1; // soc
 }

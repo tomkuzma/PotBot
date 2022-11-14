@@ -23,6 +23,9 @@
 #define getTempSlope (*(int (*)(void))0x3d7e80)
 #define getTempOffset (*(int (*)(void))0x3d7e83)
 
+//ADC calibration
+#define Device_cal (void   (*)(void))0x3D7C80
+
 #define ADC_SETUP_CYCLE 1000 //cycles to wait for adc to power up
 
 //Triggers for the trigger select registers on ADC

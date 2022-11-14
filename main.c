@@ -17,6 +17,10 @@
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
 
+#define SERVO_COUNT 2 // amount of servos
+#define ADC_COUNT 3 // amount of adcs
+
+
 //includes:
 #include "adc.h"
 #include "servo.h"
@@ -24,23 +28,30 @@
 #include <xdc/std.h>
 #include <xdc/runtime/System.h>
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Swi.h>
+
 
 #include <xdc/runtime/SysStd.h>  // Going to see if this library works better for printf
 
 #include <Headers/F2802x_device.h>
 
 //function prototypes:
+
 extern void DeviceInit(void);
 
 
-#define SERVO_COUNT 2 // amount of servos
-#define ADC_COUNT 3 // amount of adcs
+//SWI func prototypes
+extern const Swi_Handle Swi0;
+
 
 
 //declare global variables:
 volatile Bool isrFlag = FALSE; //flag used by idle function
 volatile Bool isrFlag2 = FALSE; // Flag used by second idle function -- JB
 volatile UInt tickCount = 0; //counter incremented by timer interrupt
+
+int32 c2000_temp;
+float real_temp;
 
 uint16_t adc_result_1, adc_result_2, adc_result_3;
 
@@ -50,6 +61,9 @@ Int main()
     //initialization:
     DeviceInit(); //initialize processor
 
+    //initialize global variables (clear the gah-bage)
+    c2000_temp = 0;
+
     //Servos init
     //Set servo
     float dc_min[8] = { 0.018, 0.018, 0.018, 0.018, 0.018 ,0.018 , 0.018 , 0.018};
@@ -57,6 +71,11 @@ Int main()
     servo_init(2, dc_min, dc_max); // initialize 3 servos
 
     adc_init(3,true); //Initialize 3 ADC channels, and turn temperature sensor on
+    adc_trigger_select(0, TRIGGER_CPU_TIMER_2);
+    adc_trigger_select(1, TRIGGER_CPU_TIMER_2);
+    adc_trigger_select(2, TRIGGER_CPU_TIMER_2);
+    adc_trigger_select(3, TRIGGER_CPU_TIMER_2);
+    adc_trigger_select(15, TRIGGER_CPU_TIMER_2);
 
     //jump to RTOS (does not return):
     BIOS_start();
@@ -64,71 +83,30 @@ Int main()
 }
 
 
-
-/* ======== myTickFxn ======== */
-//Timer tick function that increments a counter and sets the isrFlag
-//Entered 100 times per second if PLL and Timer set up correctly
-Void myTickFxn(UArg arg)
-{
-    static int count = 0; // Keeps track of how many times ISR called -- JB
-    if(++count == COUNT_MAX) {
-        isrFlag2 = TRUE; // Tells idle thread 2 to count seconds
-        count = 0; //Reset count -- JB
-    }
-
-
-    tickCount++; //increment the tick counter
-    if(tickCount % 5 == 0) {
-        isrFlag = TRUE; //tell idle thread to do something 20 times per second
-    }
-}
-
-/* ======== myIdleFxn ======== */
-//Idle function that is called repeatedly from RTOS
-Void myIdleFxn(Void)
-{
-   if(isrFlag == TRUE) {
-       isrFlag = FALSE;
-       //toggle blue LED:
-       GpioDataRegs.GPATOGGLE.bit.GPIO1 = 1;
-   }
-}
-
-/* ======== myIdleFxn2 ======== */
-//Idled function that prints time in seconds to the system display
-Void myIdleFxn2(Void)
-{
-   static int seconds = 0; // counts seconds --jb
-
-   if(isrFlag2 == TRUE) {
-       isrFlag2 = FALSE; //reset isr -- jb
-       seconds++; //increment seconds -- jb
-       System_printf("Time (Sec) = %d\n", seconds); // prints seconds to rtos display
-   }
-}
-
-
-/* ======== test_pin ======== */
-//ISR'd event with timer that toggles every ISR
-Void test_pin(void) {
-    GpioDataRegs.GPATOGGLE.bit.GPIO2 = 1; // Toggle every ISR, hopefully. Clock will be 2x this.
-}
-
 /*----- READ ADCS-------*/
-void read_adc_1(void) {
-    adc_result_1 = adc_sample(0, true); //Sample ADCRESULT0, start conversion
+void set_servo_1(void) {
+    //Set Servo PWM
+    servo_set(0, adc_result_1);
+
+    //FIR POST
+
+    //Sample ADC
+    adc_result_1 = adc_sample(0, false); //Sample ADCRESULT0, start conversion
 }
 
 void read_adc_2(void) {
-    adc_result_2 = adc_sample(1, true); //Sample ADCRESULT1, start conversion
+    adc_result_2 = adc_sample(1, false); //Sample ADCRESULT1, start conversion
 }
 
 void read_adc_3(void) {
-    adc_result_3 = adc_sample(2, true); //Sample ADCRESULT2, start conversion
+    adc_result_3 = adc_sample(2, false); //Sample ADCRESULT2, start conversion
 }
 
-void read_temp(void) {
-    temp_sample(1); // Start SOC and sample temp
+void temp_hwi(void) {
+    c2000_temp = temp_sample(false); // Clear SOC and sample temp
+
+    //convert to Q15 and express it in system_printf (later used for lcd)
+    real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
 }
 
 
