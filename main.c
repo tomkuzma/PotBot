@@ -58,6 +58,8 @@ uint16_t adc_result_1, adc_result_2, adc_result_3;
 /* ======== main ======== */
 Int main()
 { 
+
+
     //initialization:
     DeviceInit(); //initialize processor
 
