@@ -1,15 +1,18 @@
 # FIXED
 
 main.obj: ../main.c
-main.obj: ../adc.h
-main.obj: ../Headers/F2802x_device.h
-main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/assert.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/math.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/_ti_config.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/linkage.h
-main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdarg.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/_defs.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/_types.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/cdefs.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/machine/_types.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/machine/_limits.h
+main.obj: ../adc.h
+main.obj: ../Headers/F2802x_device.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/assert.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdarg.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdbool.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stddef.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdint.h
@@ -35,6 +38,10 @@ main.obj: ../Headers/F2802x_SysCtrl.h
 main.obj: ../Headers/F2802x_XIntrupt.h
 main.obj: ../servo.h
 main.obj: ../F2807x_EPwm_defines.h
+main.obj: ../dsp.h
+main.obj: ../uart.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/string.h
+main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/xlocale/_string.h
 main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/std.h
 main.obj: C:/ti/bios_6_83_00_18/packages/ti/targets/std.h
 main.obj: C:/ti/bios_6_83_00_18/packages/ti/targets/C28_large.h
@@ -156,23 +163,29 @@ main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/runtime/ISystemSup
 
 ../main.c:
 
-../adc.h:
-
-../Headers/F2802x_device.h:
-
-C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/assert.h:
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/math.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/_ti_config.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/linkage.h:
 
-C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdarg.h:
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/_defs.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/_types.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/cdefs.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/machine/_types.h:
+
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/machine/_limits.h:
+
+../adc.h:
+
+../Headers/F2802x_device.h:
+
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/assert.h:
+
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdarg.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/stdbool.h:
 
@@ -223,6 +236,14 @@ C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/_stdint.h:
 ../servo.h:
 
 ../F2807x_EPwm_defines.h:
+
+../dsp.h:
+
+../uart.h:
+
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/string.h:
+
+C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/xlocale/_string.h:
 
 C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/std.h:
 

@@ -19,6 +19,9 @@ extern const ti_sysbios_hal_Timer_Handle cpu_2_SOCs_50hz;
 #include <ti/sysbios/family/c28/Hwi.h>
 extern const ti_sysbios_family_c28_Hwi_Handle ADC0;
 
+#include <ti/sysbios/family/c28/Hwi.h>
+extern const ti_sysbios_family_c28_Hwi_Handle UART_ISR;
+
 extern int xdc_runtime_Startup__EXECFXN__C;
 
 extern int xdc_runtime_Startup__RESETFXN__C;

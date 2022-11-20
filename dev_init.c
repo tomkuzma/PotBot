@@ -56,8 +56,8 @@ void DeviceInit(void)
    EALLOW; // below registers are "protected", allow access.
 
 // LOW SPEED CLOCKS prescale register settings
-   //SysCtrlRegs.LOSPCP.all = 0x0002;       // Sysclk / 4 (15 MHz)
-   //SysCtrlRegs.XCLK.bit.XCLKOUTDIV=2;
+   SysCtrlRegs.LOSPCP.all = 0x0002;       // Sysclk / 4 (15 MHz)
+   SysCtrlRegs.XCLK.bit.XCLKOUTDIV=2;
 
 // PERIPHERAL CLOCK ENABLES
 //---------------------------------------------------
@@ -205,8 +205,8 @@ void DeviceInit(void)
 //--------------------------------------------------------------------------------------
 //  GPIO-19 - PIN FUNCTION = --Spare--
     GpioCtrlRegs.GPAMUX2.bit.GPIO19 = 0;    // 0=GPIO,  1=SPISTE-A,  2=SCIRX-A,  3=ECAP1
-    GpioCtrlRegs.GPADIR.bit.GPIO19 = 0;     // 1=OUTput,  0=INput
-//  GpioDataRegs.GPACLEAR.bit.GPIO19 = 1;   // uncomment if --> Set Low initially
+    GpioCtrlRegs.GPADIR.bit.GPIO19 = 1;     // 1=OUTput,  0=INput
+  GpioDataRegs.GPACLEAR.bit.GPIO19 = 1;   // uncomment if --> Set Low initially
 //  GpioDataRegs.GPASET.bit.GPIO19 = 1;     // uncomment if --> Set High initially
 //--------------------------------------------------------------------------------------
 //  GPIO-20 - GPIO-27 Do Not Exist
