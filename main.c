@@ -125,6 +125,9 @@ Int main()
     return(0);
 }
 
+void test_epwm_int(void) {
+    GpioDataRegs.GPASET.bit.GPIO19 =1;
+}
 
 /*----- READ ADCS-------*/
 void set_servo_1(void) {
@@ -143,11 +146,6 @@ void set_servo_1(void) {
 
     //Remove this, only temporary for testing
     uart_tx_char('r');
-
-
-    GpioDataRegs.GPASET.bit.GPIO19 =1;
-    test_float = atan(0.4);
-    GpioDataRegs.GPACLEAR.bit.GPIO19 =1;
 }
 
 void read_adc_2(void) {

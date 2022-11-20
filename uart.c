@@ -53,7 +53,7 @@ void uart_init(void) {
 
     //Set baud rate of 115200bps (with low clock speed of 15MHz)
     SciaRegs.SCIHBAUD = 0; // Not needed
-    SciaRegs.SCILBAUD = 0x000F; // BRR = LSPCLK/(Baud*8) - 1
+    SciaRegs.SCILBAUD = 0x0007; // BRR = LSPCLK/(Baud*8) - 1
 
     //SciaRegs.SCICTL2.bit.RXBKINTENA = 1; // Enable SCI interrupt
 
@@ -126,7 +126,7 @@ void uart_rx(char **input_string, int *ready) {
         *ready = 0;
 
         //Make decision of indexing based on character
-        if(buffer=='<') {
+        if(buffer=='X') {
             //Restart buffer index
             __uart_c_buffer_index=0;
 
@@ -134,18 +134,22 @@ void uart_rx(char **input_string, int *ready) {
             int j;
             for(j=0; j<UART_BUFF_SIZE; j++) __uart_c_buffer_string[j]=NULL;
 
-        } else if(buffer=='>') {
+            __uart_c_buffer_string[__uart_c_buffer_index] = (char) buffer;
+            __uart_c_buffer_index++; //increment buffer
+
+        } else if(buffer=='T' || buffer=='F') {
+            //Dump T or F in last variable
+            __uart_c_buffer_string[__uart_c_buffer_index]= (char) buffer;
+            __uart_c_buffer_index++;
             //End of uart buffer, put eol
-            __uart_c_buffer_string[__uart_c_buffer_index]='\0';
+            __uart_c_buffer_string[__uart_c_buffer_index]= '\0';
 
             //Signal flag that string can be dumped and processed
             *ready=1;
         } else {
             //dump buffer in appropriate spot in buffer string
             __uart_c_buffer_string[__uart_c_buffer_index] = (char) buffer;
-
-            //increment the index for next character
-            __uart_c_buffer_index++;
+            __uart_c_buffer_index++; //Increment buffer
         }
     }
     strcpy(input_string, __uart_c_buffer_string);
@@ -201,11 +205,13 @@ int parse_rx(char * string, int16_t *x, int16_t *y, int16_t *z) {
        }
        //If Z
        else {
-          //Store Z position in buffer - should be 0 or 1
-          temp_xyz[outer_ind] = string[str_ind] - 48;
-
-          //Final check - if the final value isn't 0 or 1, return error
-          if (!(temp_xyz[outer_ind] == 0 || temp_xyz[outer_ind] == 1)) return -1;
+          //Store Z position in buffer - should be 0 if F or 1 if T
+          if(string[str_ind] == 'T')
+              temp_xyz[outer_ind] = 1;
+          else if (string[str_ind] == 'F')
+              temp_xyz[outer_ind] = 0;
+          else
+              return -1; //there's been an error
        }
     }
 
