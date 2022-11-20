@@ -36,11 +36,8 @@
 
 #define SERVO_PERIOD 37499 // for 50hz
 
-#define SERVO_MAX 180   // max degrees
-#define SERVO_MIN 0     // min degrees
-
-#define ADC_MAX 4095
-#define ADC_MIN 0
+#define SERVO_MAX 900   // max degrees
+#define SERVO_MIN -900     // min degrees
 
 //Pointers to write the value to
 #define SERVO_1_REG EPwm1Regs.CMPA.half.CMPA
@@ -54,6 +51,7 @@
 
 #include "F2807x_EPwm_defines.h"
 #include "Headers/F2802x_device.h"
+#include "adc.h"
 
 //****** servo_init ********//
 //
@@ -78,7 +76,18 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]);
 // Return : None
 //
 //**************************//
-void servo_set(uint16_t channel, uint16_t input);
+void servo_set(uint16_t channel, int16_t input);
 
+//****** enable_epwm_interrupts  ********//
+//
+// Clears spurious ePWM flags and enables ePWM interrupts
+//
+// Arguments:
+// int servos - how many servos there are (2 servos per epwm interrupt)
+//
+// Return : None
+//
+//**************************//
+void enable_epwm_interrupts(int servos);
 
 #endif /* SERVO_H_ */

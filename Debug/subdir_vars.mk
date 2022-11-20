@@ -16,8 +16,10 @@ C_SRCS += \
 ../F2802x_GlobalVariableDefs.c \
 ../adc.c \
 ../dev_init.c \
+../dsp.c \
 ../main.c \
-../servo.c 
+../servo.c \
+../uart.c 
 
 GEN_CMDS += \
 ./configPkg/linker.cmd 
@@ -33,8 +35,10 @@ C_DEPS += \
 ./F2802x_GlobalVariableDefs.d \
 ./adc.d \
 ./dev_init.d \
+./dsp.d \
 ./main.d \
-./servo.d 
+./servo.d \
+./uart.d 
 
 GEN_OPTS += \
 ./configPkg/compiler.opt 
@@ -43,8 +47,10 @@ OBJS += \
 ./F2802x_GlobalVariableDefs.obj \
 ./adc.obj \
 ./dev_init.obj \
+./dsp.obj \
 ./main.obj \
-./servo.obj 
+./servo.obj \
+./uart.obj 
 
 GEN_MISC_DIRS__QUOTED += \
 "configPkg\" 
@@ -53,15 +59,19 @@ OBJS__QUOTED += \
 "F2802x_GlobalVariableDefs.obj" \
 "adc.obj" \
 "dev_init.obj" \
+"dsp.obj" \
 "main.obj" \
-"servo.obj" 
+"servo.obj" \
+"uart.obj" 
 
 C_DEPS__QUOTED += \
 "F2802x_GlobalVariableDefs.d" \
 "adc.d" \
 "dev_init.d" \
+"dsp.d" \
 "main.d" \
-"servo.d" 
+"servo.d" \
+"uart.d" 
 
 GEN_FILES__QUOTED += \
 "configPkg\linker.cmd" \
@@ -71,7 +81,9 @@ C_SRCS__QUOTED += \
 "../F2802x_GlobalVariableDefs.c" \
 "../adc.c" \
 "../dev_init.c" \
+"../dsp.c" \
 "../main.c" \
-"../servo.c" 
+"../servo.c" \
+"../uart.c" 
 
 
