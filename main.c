@@ -17,12 +17,18 @@
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
 
-#define SERVO_COUNT 2 // amount of servos
+#define SERVO_COUNT 3 // amount of servos
 #define ADC_COUNT 3 // amount of adcs
 
 #define X_POS_MIN 30; // make sure it don't collide
 #define Y_POS_MIN 30; // make sure it don't collide
+#define X_POS_MAX 300; // make sure it don't collide
+#define Y_POS_MAX 300; // make sure it don't collide
 
+enum {
+    UART_SAMPLE,
+    ADC_SAMPLE
+}; // Sample sources
 
 #include <math.h>
 
@@ -85,7 +91,9 @@ float real_temp;
 
 float test_float;
 
-uint16_t adc_result_1, adc_result_2, adc_result_3;
+int sample_select; //select source for sampling (uart or pots)
+
+uint16_t adc_0, adc_1, adc_2;
 
 /* ======== main ======== */
 Int main()
@@ -104,6 +112,8 @@ Int main()
     y_counter=0;
     buffer_string_ready = 0;
     buffer_index = 0;
+    fir_N = 1;
+    sample_select = ADC_SAMPLE;
 
     //Servos init
 
@@ -111,53 +121,132 @@ Int main()
     float dc_max[8] = { 0.118, 0.118, 0,0,0,0,0 }; // max duty cycle of servos
     servo_init(SERVO_COUNT, dc_min, dc_max); // initialize 2 servos
 
-    //enable_epwm_interrupts(SERVO_COUNT);
 
     adc_init(3,true); //Initialize 3 ADC channels, and turn temperature sensor on
-    adc_trigger_select(0, TRIGGER_CPU_TIMER_2);
-    adc_trigger_select(1, TRIGGER_CPU_TIMER_2);
-    adc_trigger_select(2, TRIGGER_CPU_TIMER_2);
-    adc_trigger_select(3, TRIGGER_CPU_TIMER_2);
-    adc_trigger_select(15, TRIGGER_CPU_TIMER_2);
+
+    enable_epwm_interrupts(SERVO_COUNT);
 
     //jump to RTOS (does not return):
     BIOS_start();
     return(0);
 }
 
-void test_epwm_int(void) {
-    GpioDataRegs.GPASET.bit.GPIO19 =1;
+void epwm1_isr(void) {
+    EPwm1Regs.ETCLR.bit.INT = 1;
+
+    //Set servos
+    servo_set(1, x_next);
+    servo_set(2, y_next);
+
+
+    //Add array values to x and y
+
+
+    //Move FIR position
 }
+
+void epwm2_isr(void) {
+    EPwm2Regs.ETCLR.bit.INT = 1;
+}
+
 
 /*----- READ ADCS-------*/
 void set_servo_1(void) {
 
     //Set Servo PWM
-    servo_set(1, joint_1_deg);
+//    servo_set(1, x_next);
+//    servo_set(2, y_next);
 
 
     //FIR POST
 
+
     //Sample ADC
-    adc_result_1 = adc_sample(0, false); //Sample ADCRESULT0, start conversion
+    //adc_result_1 = adc_sample(0, false); //Sample ADCRESULT0, start conversion
 
     //Convert adc to degrees
-    y_fit(&adc_result_1, &joint_1_deg, ADC_MIN, ADC_MAX, SERVO_MIN, SERVO_MAX);
+    //y_fit(&adc_result_1, &joint_1_deg, ADC_MIN, ADC_MAX, SERVO_MIN, SERVO_MAX);
 
     //Remove this, only temporary for testing
+    //uart_tx_char('r');
+}
+
+void hwi_sample_isr(void) {
+    GpioDataRegs.GPASET.bit.GPIO18 = 1;
+
+    //Always take UART tranmissions anyway
     uart_tx_char('r');
+
+    //Always take ADC samples of rht epots
+    adc_1 = adc_sample(1, true); // Start SOC and sample
+    adc_2 = adc_sample(2, true); // Start SOC and sample
+
+    adc_0 = adc_sample(0, true);
+    y_fit(&adc_0, &fir_N, ADC_MIN, ADC_MAX, N_MIN, N_MAX);
+
+    GpioDataRegs.GPACLEAR.bit.GPIO18 = 1;
 }
 
 void read_adc_2(void) {
-    adc_result_2 = adc_sample(1, false); //Sample ADCRESULT1, start conversion
 }
 
 void read_adc_3(void) {
-    adc_result_3 = adc_sample(2, false); //Sample ADCRESULT2, start conversion
+}
+
+void swi_fir_isr(void) {
+
+}
+
+void swi_sample_isr(void) {
+
+}
+
+void decode_xyz_task(void) {
+
+    GpioDataRegs.GPASET.bit.GPIO18=1;
+
+    //If UART sample is selected, parse buffer if there's new data
+    if(sample_select == UART_SAMPLE && buffer_string_ready==1) {
+
+        //Get rid of ready flag
+        buffer_string_ready=0;
+
+        //Dump into completed string to be parsed
+        strcpy(completed_string, buffer_string);
+
+
+        //Reset SCI
+        EALLOW;
+        SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
+        EDIS;
+
+        //Post for parsing
+        parse_rx(completed_string, &x_next, &y_next, &z);
+
+    }
+
+    //If ADC sample is selected, parse buffer with latest pot values
+    else {
+        y_fit(&adc_1, &x_next, ADC_MIN, ADC_MAX, SERVO_MIN, SERVO_MAX);
+        y_fit(&adc_2, &y_next, ADC_MIN, ADC_MAX, SERVO_MIN, SERVO_MAX);
+    }
+
+    GpioDataRegs.GPACLEAR.bit.GPIO18=1;
+}
+
+void ikine_task(void) {
+    //
+
+
+    //Dump values into joint degrees
+
+    //joint_1_deg = x_next;
+    //joint_2_deg = y_next;
+
 }
 
 void temp_hwi(void) {
-    c2000_temp = temp_sample(false); // Clear SOC and sample temp
+    c2000_temp = temp_sample(true); // Clear SOC and sample temp
 
     //convert to Q15 and express it in system_printf (later used for lcd)
     real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
@@ -208,27 +297,6 @@ void uart_isr(void) {
 
     // Take care of transmission
     uart_rx(&buffer_string, &buffer_string_ready);
-
-
-    ////THIS PART COULD BE A TASK vvvvvvvvvvvvv down here
-    //If flag ready, dump buffer_string into character string
-    if(buffer_string_ready==1) {
-
-        //Get rid of ready flag
-        buffer_string_ready=0;
-
-        //Dump into completed string to be parsed
-        strcpy(completed_string, buffer_string);
-
-
-        //Reset SCI
-        EALLOW;
-        SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
-        EDIS;
-
-        //Post for parsing
-        parse_rx(completed_string, &x_next, &y_next, &z);
-    }
 }
 
 

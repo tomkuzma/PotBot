@@ -994,17 +994,23 @@ ti_sysbios_BIOS_Module_State__ ti_sysbios_BIOS_Module__state__V;
 /* --> temp_hwi */
 extern xdc_Void temp_hwi(xdc_UArg f_arg0);
 
-/* --> set_servo_1 */
-extern xdc_Void set_servo_1(xdc_UArg f_arg0);
-
 /* --> uart_isr */
 extern xdc_Void uart_isr(xdc_UArg f_arg0);
+
+/* --> epwm1_isr */
+extern xdc_Void epwm1_isr(xdc_UArg f_arg0);
+
+/* --> epwm2_isr */
+extern xdc_Void epwm2_isr(xdc_UArg f_arg0);
 
 /* --> temp_hwi */
 extern xdc_Void temp_hwi(xdc_UArg f_arg0);
 
+/* --> hwi_sample_isr */
+extern xdc_Void hwi_sample_isr(xdc_UArg f_arg0);
+
 /* Object__table__V */
-ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[5];
+ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[7];
 
 /* Module_State__ */
 typedef struct ti_sysbios_family_c28_Hwi_Module_State__ {
@@ -1060,6 +1066,9 @@ extern xdc_Void ti_sysbios_knl_Task_restoreHwi__E(xdc_UInt f_arg0);
 
 /* --> temp_hwi */
 extern xdc_Void temp_hwi(xdc_UArg f_arg0);
+
+/* --> hwi_sample_isr */
+extern xdc_Void hwi_sample_isr(xdc_UArg f_arg0);
 
 /* Object__table__V */
 ti_sysbios_family_c28_Timer_Object__ ti_sysbios_family_c28_Timer_Object__table__V[3];
@@ -1199,8 +1208,17 @@ __T1_ti_sysbios_knl_Task_Instance_State__stack ti_sysbios_knl_Task_Instance_Stat
 __T1_ti_sysbios_knl_Task_Instance_State__stack ti_sysbios_knl_Task_Instance_State_0_stack__A[256] __attribute__ ((section(".ebss:taskStackSection"), aligned(2)));
 #endif
 
+/* --> decode_xyz_task */
+extern xdc_Void decode_xyz_task(xdc_UArg f_arg0,xdc_UArg f_arg1);
+
+/* --> ti_sysbios_knl_Task_Instance_State_1_stack__A */
+__T1_ti_sysbios_knl_Task_Instance_State__stack ti_sysbios_knl_Task_Instance_State_1_stack__A[256];
+#if !(defined(__MACH__) && defined(__APPLE__))
+__T1_ti_sysbios_knl_Task_Instance_State__stack ti_sysbios_knl_Task_Instance_State_1_stack__A[256] __attribute__ ((section(".ebss:taskStackSection"), aligned(2)));
+#endif
+
 /* Object__table__V */
-ti_sysbios_knl_Task_Object__ ti_sysbios_knl_Task_Object__table__V[1];
+ti_sysbios_knl_Task_Object__ ti_sysbios_knl_Task_Object__table__V[2];
 
 /* Module_State__ */
 typedef struct ti_sysbios_knl_Task_Module_State__ {
@@ -2061,7 +2079,7 @@ const UInt32 ti_sysbios_family_c28_Hwi_vectors[] = {
     /* 11 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 12 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 13 */  (UInt32)ti_sysbios_family_c28_Hwi_dispatchTable + (3 * (13-1)),
-    /* 14 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
+    /* 14 */  (UInt32)ti_sysbios_family_c28_Hwi_dispatchTable + (3 * (14-1)),
     /* 15 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 16 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 17 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
@@ -2095,8 +2113,8 @@ const UInt32 ti_sysbios_family_c28_Hwi_vectors[] = {
     /* 45 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 46 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 47 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
-    /* 48 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
-    /* 49 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
+    /* 48 */  (UInt32)ti_sysbios_family_c28_Hwi_dispatchPie,
+    /* 49 */  (UInt32)ti_sysbios_family_c28_Hwi_dispatchPie,
     /* 50 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 51 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 52 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
@@ -2151,7 +2169,7 @@ const UInt32 ti_sysbios_family_c28_Hwi_vectors[] = {
     /* 101 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 102 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 103 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
-    /* 104 */  (UInt32)ti_sysbios_family_c28_Hwi_dispatchPie,
+    /* 104 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 105 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 106 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
     /* 107 */  (UInt32)ti_sysbios_family_c28_Hwi_unPluggedInterrupt__I,
@@ -3004,7 +3022,7 @@ ti_sysbios_family_c28_Hwi_Module__ ti_sysbios_family_c28_Hwi_Module__root__V = {
 };
 
 /* Object__table__V */
-ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[5] = {
+ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[7] = {
     {/* instance#0 */
         0,
         (xdc_UInt)0x6fU,  /* intNum */
@@ -3020,19 +3038,6 @@ ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[5]
     },
     {/* instance#1 */
         0,
-        (xdc_UInt)0x68U,  /* intNum */
-        1,  /* enableInt */
-        1,  /* enableAck */
-        (xdc_Bits16)0x200U,  /* disableMask */
-        (xdc_Bits16)0x200U,  /* restoreMask */
-        (xdc_Bits16)0x200U,  /* ierBitMask */
-        ((xdc_UArg)(0x0)),  /* arg */
-        ((xdc_Void(*)(xdc_UArg f_arg0))(set_servo_1)),  /* fxn */
-        ((xdc_UArg)NULL),  /* irp */
-        ((void*)0),  /* hookEnv */
-    },
-    {/* instance#2 */
-        0,
         (xdc_UInt)0x60U,  /* intNum */
         1,  /* enableInt */
         1,  /* enableAck */
@@ -3044,7 +3049,33 @@ ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[5]
         ((xdc_UArg)NULL),  /* irp */
         ((void*)0),  /* hookEnv */
     },
+    {/* instance#2 */
+        0,
+        (xdc_UInt)0x30U,  /* intNum */
+        1,  /* enableInt */
+        1,  /* enableAck */
+        (xdc_Bits16)0x4U,  /* disableMask */
+        (xdc_Bits16)0x4U,  /* restoreMask */
+        (xdc_Bits16)0x4U,  /* ierBitMask */
+        ((xdc_UArg)(0x0)),  /* arg */
+        ((xdc_Void(*)(xdc_UArg f_arg0))(epwm1_isr)),  /* fxn */
+        ((xdc_UArg)NULL),  /* irp */
+        ((void*)0),  /* hookEnv */
+    },
     {/* instance#3 */
+        0,
+        (xdc_UInt)0x31U,  /* intNum */
+        1,  /* enableInt */
+        1,  /* enableAck */
+        (xdc_Bits16)0x4U,  /* disableMask */
+        (xdc_Bits16)0x4U,  /* restoreMask */
+        (xdc_Bits16)0x4U,  /* ierBitMask */
+        ((xdc_UArg)(0x0)),  /* arg */
+        ((xdc_Void(*)(xdc_UArg f_arg0))(epwm2_isr)),  /* fxn */
+        ((xdc_UArg)NULL),  /* irp */
+        ((void*)0),  /* hookEnv */
+    },
+    {/* instance#4 */
         0,
         (xdc_UInt)0x26U,  /* intNum */
         1,  /* enableInt */
@@ -3057,7 +3088,20 @@ ti_sysbios_family_c28_Hwi_Object__ ti_sysbios_family_c28_Hwi_Object__table__V[5]
         ((xdc_UArg)NULL),  /* irp */
         ((void*)0),  /* hookEnv */
     },
-    {/* instance#4 */
+    {/* instance#5 */
+        0,
+        (xdc_UInt)0xeU,  /* intNum */
+        1,  /* enableInt */
+        1,  /* enableAck */
+        (xdc_Bits16)0x2000U,  /* disableMask */
+        (xdc_Bits16)0x2000U,  /* restoreMask */
+        (xdc_Bits16)0x2000U,  /* ierBitMask */
+        ((xdc_UArg)NULL),  /* arg */
+        ((xdc_Void(*)(xdc_UArg f_arg0))(hwi_sample_isr)),  /* fxn */
+        ((xdc_UArg)NULL),  /* irp */
+        ((void*)0),  /* hookEnv */
+    },
+    {/* instance#6 */
         0,
         (xdc_UInt)0xdU,  /* intNum */
         1,  /* enableInt */
@@ -3087,8 +3131,8 @@ __T1_ti_sysbios_family_c28_Hwi_Module_State__dispatchTable ti_sysbios_family_c28
     0,  /* [10] */
     0,  /* [11] */
     0,  /* [12] */
-    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[4],  /* [13] */
-    0,  /* [14] */
+    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[6],  /* [13] */
+    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[5],  /* [14] */
     0,  /* [15] */
     0,  /* [16] */
     0,  /* [17] */
@@ -3112,7 +3156,7 @@ __T1_ti_sysbios_family_c28_Hwi_Module_State__dispatchTable ti_sysbios_family_c28
     0,  /* [35] */
     0,  /* [36] */
     0,  /* [37] */
-    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[3],  /* [38] */
+    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[4],  /* [38] */
     0,  /* [39] */
     0,  /* [40] */
     0,  /* [41] */
@@ -3122,8 +3166,8 @@ __T1_ti_sysbios_family_c28_Hwi_Module_State__dispatchTable ti_sysbios_family_c28
     0,  /* [45] */
     0,  /* [46] */
     0,  /* [47] */
-    0,  /* [48] */
-    0,  /* [49] */
+    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[2],  /* [48] */
+    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[3],  /* [49] */
     0,  /* [50] */
     0,  /* [51] */
     0,  /* [52] */
@@ -3170,7 +3214,7 @@ __T1_ti_sysbios_family_c28_Hwi_Module_State__dispatchTable ti_sysbios_family_c28
     0,  /* [93] */
     0,  /* [94] */
     0,  /* [95] */
-    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[2],  /* [96] */
+    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[1],  /* [96] */
     0,  /* [97] */
     0,  /* [98] */
     0,  /* [99] */
@@ -3178,7 +3222,7 @@ __T1_ti_sysbios_family_c28_Hwi_Module_State__dispatchTable ti_sysbios_family_c28
     0,  /* [101] */
     0,  /* [102] */
     0,  /* [103] */
-    (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[1],  /* [104] */
+    0,  /* [104] */
     0,  /* [105] */
     0,  /* [106] */
     0,  /* [107] */
@@ -3211,7 +3255,7 @@ ti_sysbios_family_c28_Hwi_Module_State__ ti_sysbios_family_c28_Hwi_Module__state
 ti_sysbios_family_c28_Hwi_Module_State__ ti_sysbios_family_c28_Hwi_Module__state__V __attribute__ ((section(".data_ti_sysbios_family_c28_Hwi_Module__state__V")));
 #endif
 ti_sysbios_family_c28_Hwi_Module_State__ ti_sysbios_family_c28_Hwi_Module__state__V = {
-    (xdc_Bits16)0x1301U,  /* ierMask */
+    (xdc_Bits16)0x3305U,  /* ierMask */
     ((xdc_Char*)NULL),  /* isrStack */
     ((xdc_Char*)NULL),  /* taskSP */
     ((void*)ti_sysbios_family_c28_Hwi_Module_State_0_dispatchTable__A),  /* dispatchTable */
@@ -3374,7 +3418,7 @@ asm("	.clink ");
 asm("	.sect \"[1].econst:ti_sysbios_family_c28_Hwi_Object__count__C\"");
 asm("	.clink ");
 
-__FAR__ const CT__ti_sysbios_family_c28_Hwi_Object__count ti_sysbios_family_c28_Hwi_Object__count__C = 5;
+__FAR__ const CT__ti_sysbios_family_c28_Hwi_Object__count ti_sysbios_family_c28_Hwi_Object__count__C = 7;
 
 /* Object__heap__C */
 #pragma DATA_SECTION(ti_sysbios_family_c28_Hwi_Object__heap__C, ".econst:ti_sysbios_family_c28_Hwi_Object__heap__C");
@@ -4116,7 +4160,7 @@ ti_sysbios_family_c28_Timer_Object__ ti_sysbios_family_c28_Timer_Object__table__
             (xdc_Bits32)0x0U,  /* hi */
             (xdc_Bits32)0x0U,  /* lo */
         },  /* extFreq */
-        (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[3],  /* hwi */
+        (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[4],  /* hwi */
     },
     {/* instance#1 */
         0,
@@ -4127,17 +4171,17 @@ ti_sysbios_family_c28_Timer_Object__ ti_sysbios_family_c28_Timer_Object__table__
         },  /* emulationModeInit */
         ti_sysbios_interfaces_ITimer_RunMode_CONTINUOUS,  /* runMode */
         ti_sysbios_interfaces_ITimer_StartMode_AUTO,  /* startMode */
-        (xdc_UInt32)0x124f80U,  /* period */
+        (xdc_UInt32)0x36ee80U,  /* period */
         ti_sysbios_interfaces_ITimer_PeriodType_COUNTS,  /* periodType */
         (xdc_UInt16)0x0U,  /* prescale */
         (xdc_UInt)0xeU,  /* intNum */
         ((xdc_UArg)NULL),  /* arg */
-        ((xdc_Void(*)(xdc_UArg f_arg0))NULL),  /* tickFxn */
+        ((xdc_Void(*)(xdc_UArg f_arg0))(hwi_sample_isr)),  /* tickFxn */
         {
             (xdc_Bits32)0x0U,  /* hi */
             (xdc_Bits32)0x0U,  /* lo */
         },  /* extFreq */
-        0,  /* hwi */
+        (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[5],  /* hwi */
     },
     {/* instance#2 */
         0,
@@ -4158,7 +4202,7 @@ ti_sysbios_family_c28_Timer_Object__ ti_sysbios_family_c28_Timer_Object__table__
             (xdc_Bits32)0x0U,  /* hi */
             (xdc_Bits32)0x0U,  /* lo */
         },  /* extFreq */
-        (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[4],  /* hwi */
+        (ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[6],  /* hwi */
     },
 };
 
@@ -7212,6 +7256,9 @@ __FAR__ const ti_sysbios_knl_Task_Params ti_sysbios_knl_Task_Object__PARAMS__C =
 /* --> ti_sysbios_knl_Task_Instance_State_0_stack__A */
 __T1_ti_sysbios_knl_Task_Instance_State__stack ti_sysbios_knl_Task_Instance_State_0_stack__A[256];
 
+/* --> ti_sysbios_knl_Task_Instance_State_1_stack__A */
+__T1_ti_sysbios_knl_Task_Instance_State__stack ti_sysbios_knl_Task_Instance_State_1_stack__A[256];
+
 /* Module__root__V */
 ti_sysbios_knl_Task_Module__ ti_sysbios_knl_Task_Module__root__V = {
     {&ti_sysbios_knl_Task_Module__root__V.link,  /* link.next */
@@ -7219,11 +7266,38 @@ ti_sysbios_knl_Task_Module__ ti_sysbios_knl_Task_Module__root__V = {
 };
 
 /* Object__table__V */
-ti_sysbios_knl_Task_Object__ ti_sysbios_knl_Task_Object__table__V[1] = {
+ti_sysbios_knl_Task_Object__ ti_sysbios_knl_Task_Object__table__V[2] = {
     {/* instance#0 */
         {
             ((ti_sysbios_knl_Queue_Elem*)((void*)&ti_sysbios_knl_Task_Object__table__V[0].qElem)),  /* next */
             ((ti_sysbios_knl_Queue_Elem*)((void*)&ti_sysbios_knl_Task_Object__table__V[0].qElem)),  /* prev */
+        },  /* qElem */
+        (xdc_Int)0x1,  /* priority */
+        (xdc_UInt)0x2U,  /* mask */
+        ((xdc_Ptr)NULL),  /* context */
+        ti_sysbios_knl_Task_Mode_INACTIVE,  /* mode */
+        ((ti_sysbios_knl_Task_PendElem*)NULL),  /* pendElem */
+        (xdc_SizeT)0x100,  /* stackSize */
+        ((void*)ti_sysbios_knl_Task_Instance_State_0_stack__A),  /* stack */
+        0,  /* stackHeap */
+        ((xdc_Void(*)(xdc_UArg f_arg0,xdc_UArg f_arg1))(decode_xyz_task)),  /* fxn */
+        ((xdc_UArg)(0x0)),  /* arg0 */
+        ((xdc_UArg)(0x0)),  /* arg1 */
+        ((xdc_Ptr)NULL),  /* env */
+        ((void*)0),  /* hookEnv */
+        1,  /* vitalTaskFlag */
+        0,  /* readyQ */
+        (xdc_UInt)0x0U,  /* curCoreId */
+        (xdc_UInt)0x0U,  /* affinity */
+        1,  /* privileged */
+        ((xdc_Ptr)NULL),  /* domain */
+        (xdc_UInt32)0x0U,  /* checkValue */
+        ((xdc_Ptr)NULL),  /* tls */
+    },
+    {/* instance#1 */
+        {
+            ((ti_sysbios_knl_Queue_Elem*)((void*)&ti_sysbios_knl_Task_Object__table__V[1].qElem)),  /* next */
+            ((ti_sysbios_knl_Queue_Elem*)((void*)&ti_sysbios_knl_Task_Object__table__V[1].qElem)),  /* prev */
         },  /* qElem */
         (xdc_Int)0x0,  /* priority */
         (xdc_UInt)0x1U,  /* mask */
@@ -7231,7 +7305,7 @@ ti_sysbios_knl_Task_Object__ ti_sysbios_knl_Task_Object__table__V[1] = {
         ti_sysbios_knl_Task_Mode_INACTIVE,  /* mode */
         ((ti_sysbios_knl_Task_PendElem*)NULL),  /* pendElem */
         (xdc_SizeT)0x100,  /* stackSize */
-        ((void*)ti_sysbios_knl_Task_Instance_State_0_stack__A),  /* stack */
+        ((void*)ti_sysbios_knl_Task_Instance_State_1_stack__A),  /* stack */
         0,  /* stackHeap */
         ((xdc_Void(*)(xdc_UArg f_arg0,xdc_UArg f_arg1))(ti_sysbios_knl_Idle_loop__E)),  /* fxn */
         ((xdc_UArg)(0x0)),  /* arg0 */
@@ -7351,7 +7425,7 @@ __T1_ti_sysbios_knl_Task_Module_State__readyQ ti_sysbios_knl_Task_Module_State_0
 
 /* --> ti_sysbios_knl_Task_Module_State_0_idleTask__A */
 __T1_ti_sysbios_knl_Task_Module_State__idleTask ti_sysbios_knl_Task_Module_State_0_idleTask__A[1] = {
-    (ti_sysbios_knl_Task_Handle)&ti_sysbios_knl_Task_Object__table__V[0],  /* [0] */
+    (ti_sysbios_knl_Task_Handle)&ti_sysbios_knl_Task_Object__table__V[1],  /* [0] */
 };
 
 /* Module__state__V */
@@ -7364,7 +7438,7 @@ ti_sysbios_knl_Task_Module_State__ ti_sysbios_knl_Task_Module__state__V = {
     1,  /* locked */
     (xdc_UInt)0x0U,  /* curSet */
     0,  /* workFlag */
-    (xdc_UInt)0x1U,  /* vitalTasks */
+    (xdc_UInt)0x2U,  /* vitalTasks */
     0,  /* curTask */
     0,  /* curQ */
     ((void*)ti_sysbios_knl_Task_Module_State_0_readyQ__A),  /* readyQ */
@@ -7541,7 +7615,7 @@ asm("	.clink ");
 asm("	.sect \"[1].econst:ti_sysbios_knl_Task_Object__count__C\"");
 asm("	.clink ");
 
-__FAR__ const CT__ti_sysbios_knl_Task_Object__count ti_sysbios_knl_Task_Object__count__C = 1;
+__FAR__ const CT__ti_sysbios_knl_Task_Object__count ti_sysbios_knl_Task_Object__count__C = 2;
 
 /* Object__heap__C */
 #pragma DATA_SECTION(ti_sysbios_knl_Task_Object__heap__C, ".econst:ti_sysbios_knl_Task_Object__heap__C");
@@ -16508,11 +16582,17 @@ const ti_sysbios_hal_Timer_Handle cpu_timer_0 = (ti_sysbios_hal_Timer_Handle)((t
 const ti_sysbios_family_c28_Hwi_Handle Temp = (ti_sysbios_family_c28_Hwi_Handle)((ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[0]);
 
     __attribute__ ((used))
-const ti_sysbios_hal_Timer_Handle cpu_2_SOCs_50hz = (ti_sysbios_hal_Timer_Handle)((ti_sysbios_hal_Timer_Handle)&ti_sysbios_hal_Timer_Object__table__V[1]);
+const ti_sysbios_family_c28_Hwi_Handle UART_ISR = (ti_sysbios_family_c28_Hwi_Handle)((ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[1]);
 
     __attribute__ ((used))
-const ti_sysbios_family_c28_Hwi_Handle ADC0 = (ti_sysbios_family_c28_Hwi_Handle)((ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[1]);
+const ti_sysbios_family_c28_Hwi_Handle EPWM1_ISR = (ti_sysbios_family_c28_Hwi_Handle)((ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[2]);
 
     __attribute__ ((used))
-const ti_sysbios_family_c28_Hwi_Handle UART_ISR = (ti_sysbios_family_c28_Hwi_Handle)((ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[2]);
+const ti_sysbios_family_c28_Hwi_Handle EPWM2_ISR = (ti_sysbios_family_c28_Hwi_Handle)((ti_sysbios_family_c28_Hwi_Handle)&ti_sysbios_family_c28_Hwi_Object__table__V[3]);
+
+    __attribute__ ((used))
+const ti_sysbios_hal_Timer_Handle cpu_timer_2 = (ti_sysbios_hal_Timer_Handle)((ti_sysbios_hal_Timer_Handle)&ti_sysbios_hal_Timer_Object__table__V[1]);
+
+    __attribute__ ((used))
+const ti_sysbios_knl_Task_Handle decode_xyz = (ti_sysbios_knl_Task_Handle)((ti_sysbios_knl_Task_Handle)&ti_sysbios_knl_Task_Object__table__V[0]);
 

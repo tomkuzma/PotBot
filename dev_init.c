@@ -199,8 +199,8 @@ void DeviceInit(void)
 //--------------------------------------------------------------------------------------
 //  GPIO-18 - PIN FUNCTION = --Spare--
     GpioCtrlRegs.GPAMUX2.bit.GPIO18 = 0;    // 0=GPIO,  1=SPICLK-A,  2=SCITX-A,  3=XCLKOUT
-    GpioCtrlRegs.GPADIR.bit.GPIO18 = 0;     // 1=OUTput,  0=INput
-//  GpioDataRegs.GPACLEAR.bit.GPIO18 = 1;   // uncomment if --> Set Low initially
+    GpioCtrlRegs.GPADIR.bit.GPIO18 = 1;     // 1=OUTput,  0=INput
+    GpioDataRegs.GPACLEAR.bit.GPIO18 = 1;   // uncomment if --> Set Low initially
 //  GpioDataRegs.GPASET.bit.GPIO18 = 1;     // uncomment if --> Set High initially
 //--------------------------------------------------------------------------------------
 //  GPIO-19 - PIN FUNCTION = --Spare--

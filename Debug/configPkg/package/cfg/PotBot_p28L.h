@@ -13,14 +13,20 @@ extern const ti_sysbios_hal_Timer_Handle cpu_timer_0;
 #include <ti/sysbios/family/c28/Hwi.h>
 extern const ti_sysbios_family_c28_Hwi_Handle Temp;
 
-#include <ti/sysbios/hal/Timer.h>
-extern const ti_sysbios_hal_Timer_Handle cpu_2_SOCs_50hz;
-
-#include <ti/sysbios/family/c28/Hwi.h>
-extern const ti_sysbios_family_c28_Hwi_Handle ADC0;
-
 #include <ti/sysbios/family/c28/Hwi.h>
 extern const ti_sysbios_family_c28_Hwi_Handle UART_ISR;
+
+#include <ti/sysbios/family/c28/Hwi.h>
+extern const ti_sysbios_family_c28_Hwi_Handle EPWM1_ISR;
+
+#include <ti/sysbios/family/c28/Hwi.h>
+extern const ti_sysbios_family_c28_Hwi_Handle EPWM2_ISR;
+
+#include <ti/sysbios/hal/Timer.h>
+extern const ti_sysbios_hal_Timer_Handle cpu_timer_2;
+
+#include <ti/sysbios/knl/Task.h>
+extern const ti_sysbios_knl_Task_Handle decode_xyz;
 
 extern int xdc_runtime_Startup__EXECFXN__C;
 
