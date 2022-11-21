@@ -49,7 +49,7 @@ void moving_average(int16_t *out, int16_t *in, int16_t N, int16_t start);
 // Return : None
 //
 //**************************//
-void ikine(int32_t *joint1, int32_t *joint2, int32_t x, int32_t y);
+void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y);
 
 //********** sqrt_i32 **********//
 //

@@ -79,8 +79,8 @@ int buffer_string_ready; // ready to be parsed
 
 
 //Joint servo positions
-int32_t joint_1_deg;
-int32_t joint_2_deg;
+int16_t joint_1_deg;
+int16_t joint_2_deg;
 
 
 //Temperature regs
@@ -138,8 +138,8 @@ void epwm1_isr(void) {
     servo_set(1, x_next);
     servo_set(2, y_next);
 
-    x = 200;
-    y = 45;
+    x = 212;
+    y = 212;
 
     GpioDataRegs.GPASET.bit.GPIO19 = 1;
     ikine(&joint_1_deg, &joint_2_deg, x, y);

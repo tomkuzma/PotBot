@@ -55,19 +55,23 @@ void moving_average(int16_t *out, int16_t *in, int16_t N, int16_t start) {
 // Return : None
 //
 //**************************//
-int32_t joint_test, num2,denom2, num1, denom1;
+void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y) {
 
-void ikine(int32_t *joint1, int32_t *joint2, int32_t x, int32_t y) {
     //For joint 1
-    num1 = 300*y - sqrt_i32(90000*y*y - y*y*y*y + 90000*x*x - 2*x*x*y*y - x*x*x*x);
-    denom1 = (x*x + 300*x + y*y);
-//    *joint1 = 360/3.1415*atan((float)num1/denom1);
+    int32_t num1 = 300*y - sqrt_i32(90000*y*y - y*y*y*y + 90000*x*x - 2*x*x*y*y - x*x*x*x);
+    int32_t denom1 = (x*x + 300*x + y*y);
     int neg_flag = 0;
     if (num1 < 0) {
         neg_flag = 1;
         num1 = -num1;
     }
-    int32_t joint_temp = atan2_fp(num1,denom1);
+    //The fixed-point atan seems to have a problem with going out of range, so if the denom or num are big,
+    //Then bit shift both the num or denom so the function can handle it
+    if(num1 > 10000 || denom1 > 10000) {
+        num1 = num1 >> 6;
+        denom1 = denom1 >> 6;
+    }
+    int32_t joint_temp = 2*atan2_fp(num1/10,denom1/10);
     if (neg_flag==1) *joint1 = -joint_temp;
     else *joint1 = joint_temp;
 
@@ -101,28 +105,6 @@ int32_t sqrt_i32(int32_t v) {
         b >>= 2;
     }
     return q;
-}
-
-int16_t atan2_fp_approx(int32_t y_in, int32_t x_in) {
-    int inv_flag = 0;
-    int neg_y_flag = 0;
-    int neg_x_flag = 0;
-
-    int32_t y, x;
-
-
-    if(y_in < 0) neg_y_flag = 1;
-    if(x_in < 0) neg_x_flag = 1;
-
-    if(abs(y) > abs(x)) {
-        inv_flag = 1;
-        y = x_in;
-
-        x = y_in;
-    } else {
-        y = y_in;
-        x = x_in;
-    }
 }
 
 
