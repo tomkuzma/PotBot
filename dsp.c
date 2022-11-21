@@ -55,6 +55,139 @@ void moving_average(int16_t *out, int16_t *in, int16_t N, int16_t start) {
 // Return : None
 //
 //**************************//
-void ikine(int16_t *joint1, int16_t *joint2, int16_t x, int16_t y) {
+int32_t joint_test, num2,denom2, num1, denom1;
 
+void ikine(int32_t *joint1, int32_t *joint2, int32_t x, int32_t y) {
+    //For joint 1
+    num1 = 300*y - sqrt_i32(90000*y*y - y*y*y*y + 90000*x*x - 2*x*x*y*y - x*x*x*x);
+    denom1 = (x*x + 300*x + y*y);
+//    *joint1 = 360/3.1415*atan((float)num1/denom1);
+    int neg_flag = 0;
+    if (num1 < 0) {
+        neg_flag = 1;
+        num1 = -num1;
+    }
+    int32_t joint_temp = atan2_fp(num1,denom1);
+    if (neg_flag==1) *joint1 = -joint_temp;
+    else *joint1 = joint_temp;
+
+
+    //For joint 2
+    *joint2 = 2*atan2_fp(sqrt_i32(90000 - y*y - x*x),sqrt_i32(x*x + y*y));
+}
+
+//********** sqrt_i32 **********//
+//
+// calculates fixed point square roots using bit shift
+// Taken from https://github.com/chmike/fpsqrt/blob/master/fpsqrt.c
+//
+// Arguments:
+// int v - squared integer to be square rooted
+//
+// Return : Int of square root
+//
+//**************************//
+int32_t sqrt_i32(int32_t v) {
+    uint32_t b = (unsigned long int) 1<<30, q = 0, r = v;
+    while (b > r)
+        b >>= 2;
+    while( b > 0 ) {
+        uint32_t t = q + b;
+        q >>= 1;
+        if( r >= t ) {
+            r -= t;
+            q += b;
+        }
+        b >>= 2;
+    }
+    return q;
+}
+
+int16_t atan2_fp_approx(int32_t y_in, int32_t x_in) {
+    int inv_flag = 0;
+    int neg_y_flag = 0;
+    int neg_x_flag = 0;
+
+    int32_t y, x;
+
+
+    if(y_in < 0) neg_y_flag = 1;
+    if(x_in < 0) neg_x_flag = 1;
+
+    if(abs(y) > abs(x)) {
+        inv_flag = 1;
+        y = x_in;
+
+        x = y_in;
+    } else {
+        y = y_in;
+        x = x_in;
+    }
+}
+
+
+//********** atan2_fp **********//
+//
+// calculates approximation of atan using fixed point
+// Taken from https://www.dsprelated.com/showthread/comp.dsp/28979-3.php
+//
+// Arguments:
+// int y_fp - servo 1 value (output)
+// int x_fp - servo 2 value (output)
+//
+// Return : Int of angle
+//
+//**************************//
+int32_t atan2_fp(int32_t y_fp, int32_t x_fp) {
+    int32_t coeff_1 = 45;
+    int32_t coeff_1b = -56; // 56.24;
+    int32_t coeff_1c = 11;  // 11.25
+    int32_t coeff_2 = 135;
+
+    int32_t angle = 0;
+
+    int32_t r;
+    int32_t r3;
+
+    int32_t y_abs_fp = y_fp;
+    if (y_abs_fp < 0)
+        y_abs_fp = -y_abs_fp;
+
+    // On the x axis, i.e. angle is 0 or 180
+    if (y_fp == 0) {
+        if (x_fp >= 0) angle = 0;
+        else angle = 180;
+    }
+    // In quadrant 1 or 4
+    else if (x_fp >= 0)
+    {
+        r = ((x_fp - y_abs_fp) << MULTIPLY_FP_RESOLUTION_BITS) /
+            (x_fp + y_abs_fp);
+
+        r3 = r * r;
+        r3 = r3 >> MULTIPLY_FP_RESOLUTION_BITS;
+        r3 *= r;
+        r3 = r3 >> MULTIPLY_FP_RESOLUTION_BITS;
+        r3 *= coeff_1c;
+        angle = (coeff_1 + ((coeff_1b * r + r3) >>
+            MULTIPLY_FP_RESOLUTION_BITS));
+    }
+    // In quadrant 2 or 3
+    else
+    {
+        r = (((x_fp + y_abs_fp)) << MULTIPLY_FP_RESOLUTION_BITS) /
+            ((y_abs_fp - x_fp));
+        r3 = r * r;
+        r3 = r3 >> MULTIPLY_FP_RESOLUTION_BITS;
+        r3 *= r;
+        r3 = r3 >> MULTIPLY_FP_RESOLUTION_BITS;
+        r3 *= coeff_1c;
+        angle = coeff_2 + ((int32_t )(((coeff_1b * r + r3) >>
+            MULTIPLY_FP_RESOLUTION_BITS)));
+    }
+
+    if (y_fp < 0)
+        return (-angle);     // negate if in quad III or IV
+    else
+        return (angle);
 }

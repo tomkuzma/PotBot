@@ -212,6 +212,7 @@ int32 temp_sample(bool soc) {
 // Return: none
 //***************************//
 void y_fit(int16_t *in, int16_t *out, int x_min, int x_max, int y_min, int y_max) {
+
     //Create temp output with larger size
     int32_t out_temp=NULL;
 
@@ -220,4 +221,5 @@ void y_fit(int16_t *in, int16_t *out, int x_min, int x_max, int y_min, int y_max
 
     //Dump temp output buffer into out
     *out = (int16_t) out_temp;
+
 }

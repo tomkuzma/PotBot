@@ -30,8 +30,6 @@ enum {
     ADC_SAMPLE
 }; // Sample sources
 
-#include <math.h>
-
 //includes:
 #include "adc.h"
 #include "servo.h"
@@ -81,8 +79,8 @@ int buffer_string_ready; // ready to be parsed
 
 
 //Joint servo positions
-int joint_1_deg;
-int joint_2_deg;
+int32_t joint_1_deg;
+int32_t joint_2_deg;
 
 
 //Temperature regs
@@ -131,12 +129,22 @@ Int main()
     return(0);
 }
 
+float test1, test2;
+
 void epwm1_isr(void) {
     EPwm1Regs.ETCLR.bit.INT = 1;
 
     //Set servos
     servo_set(1, x_next);
     servo_set(2, y_next);
+
+    x = 200;
+    y = 45;
+
+    GpioDataRegs.GPASET.bit.GPIO19 = 1;
+    ikine(&joint_1_deg, &joint_2_deg, x, y);
+
+    GpioDataRegs.GPACLEAR.bit.GPIO19 = 1;
 
 
     //Add array values to x and y
@@ -172,7 +180,6 @@ void set_servo_1(void) {
 }
 
 void hwi_sample_isr(void) {
-    GpioDataRegs.GPASET.bit.GPIO18 = 1;
 
     //Always take UART tranmissions anyway
     uart_tx_char('r');
@@ -183,8 +190,6 @@ void hwi_sample_isr(void) {
 
     adc_0 = adc_sample(0, true);
     y_fit(&adc_0, &fir_N, ADC_MIN, ADC_MAX, N_MIN, N_MAX);
-
-    GpioDataRegs.GPACLEAR.bit.GPIO18 = 1;
 }
 
 void read_adc_2(void) {
@@ -202,8 +207,6 @@ void swi_sample_isr(void) {
 }
 
 void decode_xyz_task(void) {
-
-    GpioDataRegs.GPASET.bit.GPIO18=1;
 
     //If UART sample is selected, parse buffer if there's new data
     if(sample_select == UART_SAMPLE && buffer_string_ready==1) {
@@ -231,7 +234,6 @@ void decode_xyz_task(void) {
         y_fit(&adc_2, &y_next, ADC_MIN, ADC_MAX, SERVO_MIN, SERVO_MAX);
     }
 
-    GpioDataRegs.GPACLEAR.bit.GPIO18=1;
 }
 
 void ikine_task(void) {
