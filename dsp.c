@@ -10,8 +10,8 @@
 // calculates moving average of input array, unsigned ints for adc
 //
 // Arguments:
-// uint16_t out - output buffer
 // uint16_t in - input array
+// uint16_t out - output buffer
 // uint8_t N - how many terms to be averaged
 // uint8_t start - position pointer should be at for input
 //
@@ -22,7 +22,7 @@
 #include "dsp.h"
 
 
-void moving_average(int16_t *out, int16_t *in, int16_t N, int16_t start) {
+void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start) {
    // Pointer which holds input values
    int* p = NULL;
 
@@ -49,7 +49,7 @@ void moving_average(int16_t *out, int16_t *in, int16_t N, int16_t start) {
 // Arguments:
 // int16_t *joint1 - servo 1 value (output)
 // int16_t *joint2 - servo 2 value (output)
-// int16_t*x - position x (input)
+// int16_t x - position x (input)
 // int16_t y - position y (input)
 //
 // Return : None

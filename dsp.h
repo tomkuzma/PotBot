@@ -16,10 +16,13 @@
 #define MULTIPLY_FP_RESOLUTION_BITS 15 // for fixed point atan
 
 #include "Headers/F2802x_device.h"
-#include <math.h>
 
 //Stuff for input arrays
 #define FIR_INPUT_SIZE N_MAX // Size of input array
+
+#define Z_FIR_INPUT_SIZE    10  // Number of terms to add for FIR
+#define Z_FIR_DIV           5   // Amount to divide Z average moving filter by
+
 
 //****** moving_average ********//
 //
@@ -34,7 +37,7 @@
 // Return : None
 //
 //**************************//
-void moving_average(int16_t *out, int16_t *in, int16_t N, int16_t start);
+void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start);
 
 //********** ikine **********//
 //

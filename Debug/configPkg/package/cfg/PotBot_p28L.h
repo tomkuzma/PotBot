@@ -8,37 +8,40 @@
 #include <xdc/std.h>
 
 #include <ti/sysbios/family/c28/Hwi.h>
-extern const ti_sysbios_family_c28_Hwi_Handle UART_ISR;
+extern const ti_sysbios_family_c28_Hwi_Handle uart_isr;
 
 #include <ti/sysbios/family/c28/Hwi.h>
-extern const ti_sysbios_family_c28_Hwi_Handle EPWM1_ISR;
+extern const ti_sysbios_family_c28_Hwi_Handle epwm_1_isr;
 
 #include <ti/sysbios/family/c28/Hwi.h>
-extern const ti_sysbios_family_c28_Hwi_Handle EPWM2_ISR;
+extern const ti_sysbios_family_c28_Hwi_Handle epwm_2_isr;
 
 #include <ti/sysbios/knl/Semaphore.h>
-extern const ti_sysbios_knl_Semaphore_Handle sem_uart_received;
+extern const ti_sysbios_knl_Semaphore_Handle sem_parse;
 
 #include <ti/sysbios/knl/Semaphore.h>
-extern const ti_sysbios_knl_Semaphore_Handle sem_fir_ready;
-
-#include <ti/sysbios/knl/Semaphore.h>
-extern const ti_sysbios_knl_Semaphore_Handle sem_ikine_ready;
+extern const ti_sysbios_knl_Semaphore_Handle sem_spi;
 
 #include <ti/sysbios/knl/Task.h>
 extern const ti_sysbios_knl_Task_Handle tsk_parse_rx;
 
 #include <ti/sysbios/knl/Semaphore.h>
-extern const ti_sysbios_knl_Semaphore_Handle sem_adc_done;
-
-#include <ti/sysbios/knl/Semaphore.h>
-extern const ti_sysbios_knl_Semaphore_Handle sem_parse_done;
+extern const ti_sysbios_knl_Semaphore_Handle sem_uart_tx;
 
 #include <ti/sysbios/knl/Swi.h>
 extern const ti_sysbios_knl_Swi_Handle swi_uart_rx;
 
 #include <ti/sysbios/knl/Swi.h>
-extern const ti_sysbios_knl_Swi_Handle swi_uart_tx;
+extern const ti_sysbios_knl_Swi_Handle swi_epwm_1;
+
+#include <ti/sysbios/knl/Swi.h>
+extern const ti_sysbios_knl_Swi_Handle swi_epwm_2;
+
+#include <ti/sysbios/knl/Task.h>
+extern const ti_sysbios_knl_Task_Handle tsk_uart_tx;
+
+#include <ti/sysbios/knl/Task.h>
+extern const ti_sysbios_knl_Task_Handle tsk_spi;
 
 extern int xdc_runtime_Startup__EXECFXN__C;
 

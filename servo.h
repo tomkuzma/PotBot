@@ -39,6 +39,10 @@
 #define SERVO_MAX 900   // max degrees
 #define SERVO_MIN -900     // min degrees
 
+/*****MUST CHANGE******/
+#define Z_MAX  45 // Degrees when z==1
+#define Z_MIN -45 // Degrees when z==0
+
 //Pointers to write the value to
 #define SERVO_1_REG EPwm1Regs.CMPA.half.CMPA
 #define SERVO_2_REG EPwm1Regs.CMPB

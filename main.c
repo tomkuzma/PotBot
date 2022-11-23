@@ -20,17 +20,17 @@
 #define SERVO_COUNT 3 // amount of servos
 #define SERVO_1 0 // Channel for servo 1
 #define SERVO_2 1 // Channel for servo 2
-#define SERVO_3 2 // Channel for servo 3
+#define SERVO_Z 2 // Channel for servo 3
 
-#define ADC_COUNT 3 // amount of adcs
+#define ADC_COUNT 4 // amount of adcs
 #define ADC_POT_N 0 // pot for adc channel 0 -> FIR moving average terms/N
 #define ADC_POT_X 1 // pot for adc channel 1 -> x_next
-#define ADC_POT_Y 2 // pot for adc channel 2 -> y_next
+#define ADC_POT_Y 3 // pot for adc channel 2 -> y_next
 
-#define X_POS_MIN 30; // make sure it don't collide
-#define Y_POS_MIN 30; // make sure it don't collide
-#define X_POS_MAX 300; // make sure it don't collide
-#define Y_POS_MAX 300; // make sure it don't collide
+#define X_POS_MIN 30 // make sure it don't collide
+#define Y_POS_MIN 30 // make sure it don't collide
+#define X_POS_MAX 300 // make sure it don't collide
+#define Y_POS_MAX 300 // make sure it don't collide
 
 
 int asdf_test;
@@ -59,52 +59,32 @@ enum {
 #include <Headers/F2802x_device.h>
 
 //function prototypes:
-
 extern void DeviceInit(void);
 
-
-// HWI Notes:
-// HWI sources will be:
-//
-//  epwm 1 period reset
-//  epwm 2 period reset
-//  uart receive
-//
-//
-//  do we need spi rx?
-//
-//
-//
-//
-
 //SWI func prototypes
-extern const Swi_Handle swi_servo; // Pends resources and sets servos
-extern const Swi_Handle swi_adc; // Start SOCs and take vals
-extern const Swi_Handle swi_uart_tx; // Send UART transmission
+extern const Swi_Handle swi_epwm_1; // Pends resources and sets servos, start SOCs
+extern const Swi_Handle swi_epwm_2; // take vals, start SOCs
 extern const Swi_Handle swi_uart_rx; // Receive UART buffer
 
 //task func prototypes
+extern const Task_Handle tsk_uart_tx; // Sends tx for cam pi coordinates
 extern const Task_Handle tsk_parse_rx; // Parses UART reception when ready
-extern const Task_Handle tsk_fir; // Force between boundaries, Shift vals, moves pointers, performs FIR
-extern const Task_Handle tsk_ikine; // Performs ikine when resources available,
 extern const Task_Handle tsk_spi;   // Sends SPI values to other C2000
-extern const Task_Handle tsk_select_source; // Samples button to see if on and
 
 //semaphores for tasks
-extern const Semaphore_Handle sem_uart_received; //Gets posted when UART buffer is full
-extern const Semaphore_Handle sem_parse_done; // Gets posted when String has been parsed
-extern const Semaphore_Handle sem_adc_done; // Gets posted when ADC vals have been received
-extern const Semaphore_Handle sem_fir_ready; //Gets posted when new values are inserted into array
-extern const Semaphore_Handle sem_ikine_ready; //Gets posted when FIR is done
+extern const Semaphore_Handle sem_parse; //Gets posted when UART buffer is full
+extern const Semaphore_Handle sem_spi; // Gets posted when String has been parsed and adc is done
+extern const Semaphore_Handle sem_uart_tx; //Gets posted when servos have been set
 
 //FIR and ikine
 int16_t x, y, z; // current values for x,y,z
-int16_t x_adc_next, y_adc_next, z_adc_next; // adc next values for x,y,z (gets put into x array and y array
+int16_t x_adc_next, y_adc_next, z_switch_next; // adc next values for x,y,z (gets put into x array and y array
 int16_t x_uart_next, y_uart_next, z_uart_next; // uart next values for x,y,z (gets put into x array and y array
 int16_t x_array[] = {[0 ... FIR_INPUT_SIZE*2-1] = 0}; // x array for inputs
 int16_t y_array[] = {[0 ... FIR_INPUT_SIZE*2-1] = 0}; // y array for inputs
+int16_t z_array[] = {[0 ... Z_FIR_INPUT_SIZE*2-1] = 0}; // z array for inputs
 int16_t fir_N;          //Length of array
-int16_t x_counter, y_counter;    // Point of array where FIR is calculated from
+int16_t x_counter, y_counter, z_counter;    // Point of array where FIR is calculated from
 
 //UART module
 char completed_string[UART_BUFF_SIZE]; // after uart transmission, store here
@@ -123,12 +103,9 @@ float real_temp;
 //Select source for sampling (uart or pots)
 int sample_select;
 
-uint16_t adc_0, adc_1, adc_2;
-
 /* ======== main ======== */
 Int main()
 { 
-
 
     //initialization:
     DeviceInit(); //initialize processor
@@ -136,14 +113,19 @@ Int main()
 
     //initialize global variables (clear the gah-bage)
     c2000_temp = 0;
-    x = 30;
-    y = 30;
-    x_counter=0;
-    y_counter=0;
+    x = 300; // Starting position of xy
+    y = 0; // Starting position of xy
+    x_counter=FIR_INPUT_SIZE-1;
+    y_counter=FIR_INPUT_SIZE-1;
+    z_counter=Z_FIR_INPUT_SIZE-1;
     buffer_string_ready = 0;
     buffer_index = 0;
-    fir_N = 1;
-    sample_select = UART_SAMPLE;
+    fir_N = N_MIN;
+    sample_select = ADC_SAMPLE;
+
+    //Clear UART buffer
+    int j;
+    for (j = 0; j<UART_BUFF_SIZE; j++) buffer_string[j] = NULL;
 
     //Initialize SERVOs
     float dc_min[8] = { 0.018, 0.018, 0.018, 0,0,0,0,0}; // min duty cycle of servos
@@ -163,39 +145,130 @@ Int main()
 
 
 void hwi_epwm_1_isr(void) {
-    //Turn EPWM 2 interrupt flag off
-    EPwm1Regs.ETCLR.bit.INT = 1;
-
-    //Set servos
-    servo_set(SERVO_1, joint_1);
-    servo_set(SERVO_2, joint_2);
-
-    //Post request for Pi camera position
-    Swi_post(swi_uart_tx);
+    //Post routine for epwm 1
+    Swi_post(swi_epwm_1);
 }
 
 void hwi_epwm_2_isr(void) {
-    //Turn EPWM 2 interrupt flag off
-    EPwm2Regs.ETCLR.bit.INT = 1;
+    //Post routine for epwm 2
+    Swi_post(swi_epwm_2);
 }
 
 void hwi_uart_rx_isr(void) {
     //Post SWI for receiving buffer (pi cam position)
     Swi_post(swi_uart_rx);
-
 }
 
-/******** swi_uart_tx_isr *******
+/******** swi_epwm_1_isr *******
  *
- * Priority 12
- * Sends transmission to pi requesting xyz coordinates
+ * Priority 15
+ * Takes care of xy
+ * FIRs, Ikines, then sets Servos
  *
  */
-void swi_uart_tx_isr(void) {
-    //BLOCK buffer_string_ready being used???
-    uart_tx_char('r');
+void swi_epwm_1_isr(void) {
+    //Clear EPWM 1 flag
+    EPwm1Regs.ETCLR.bit.INT=1;
 
+    //Insert next x and y value into input array, if UART
+    if(sample_select==UART_SAMPLE) {
+        //Store x if uart
+        x_array[x_counter] = x_uart_next;
+        x_array[x_counter+FIR_INPUT_SIZE] = x_uart_next;
+
+        //Store y if uart
+        y_array[y_counter] = y_uart_next;
+        y_array[y_counter+FIR_INPUT_SIZE] = y_uart_next;
+    }
+    //Insert next x and y into input array, if ADC
+    else {
+        //Store x if adc
+        x_array[x_counter] = x_adc_next;
+        x_array[x_counter+FIR_INPUT_SIZE] = x_adc_next;
+
+        //Store y if adc
+        y_array[y_counter] = y_adc_next;
+        y_array[y_counter+FIR_INPUT_SIZE] = y_adc_next;
+    }
+
+    //FIR x
+    moving_average(&x_array, &x, fir_N, x_counter);
+
+    //FIR y
+    moving_average(&y_array, &y, fir_N, y_counter);
+
+    //Ikine kinematics
+    ikine(&joint_1, &joint_2, x, y);
+
+    //Set servo 1 and 2 duty cycles
+    servo_set(SERVO_1, joint_1);
+    servo_set(SERVO_2, joint_2-90); //-90 to account for 90 deg offset being in joint 2 position brings you
+
+    //Increment pointer for x FIR
+    if(x_counter==0) x_counter=FIR_INPUT_SIZE-1; //Rollover
+    else x_counter--;
+
+    //Increment pointer for y FIR
+    if(y_counter==0) y_counter=FIR_INPUT_SIZE-1; //Rollover
+    else y_counter--;
+
+    //Post SPI sem
+    Semaphore_post(sem_spi);
+
+    //Post UART tx sem
+    Semaphore_post(sem_uart_tx);
 }
+
+/******** swi_epwm_2_isr *******
+ *
+ * Priority 14
+ * Takes care of z-axis servo positioning
+ *
+ */
+void swi_epwm_2_isr(void) {
+    //Clear EPWM 2 flag
+    EPwm2Regs.ETCLR.bit.INT=1;
+
+    //Insert next z value into input array, if UART
+    if(sample_select==UART_SAMPLE) {
+        z_array[z_counter] = z_uart_next;
+        z_array[z_counter+Z_FIR_INPUT_SIZE] = z_uart_next;
+    }
+    //Insert next z into input array, if ADC
+    else {
+        z_array[z_counter] = z_switch_next;
+        z_array[z_counter+Z_FIR_INPUT_SIZE] = z_switch_next;
+    }
+
+    //Perform FIR on Z (input array 10, but moving average size 5), STore output value into Z
+    moving_average(&z_array, &z, Z_FIR_INPUT_SIZE, z_counter);
+
+    //Assign a value to the servo
+    int16_t joint_z;
+    if(z == 1) joint_z = Z_MAX;
+    else joint_z = Z_MIN;
+
+    //Set servo to Z
+    servo_set(SERVO_Z, joint_z);
+
+    //Take ADC values (sequentially)
+    int16_t adc_N, adc_X, adc_Y; //Adc result variables
+    adc_N = adc_sample(ADC_POT_N, true);
+    adc_X = adc_sample(ADC_POT_X, true);
+    adc_Y = adc_sample(ADC_POT_Y, true);
+
+    //Y-fit the ADC 0 sample into N
+    y_fit(&adc_N, &fir_N, ADC_MIN, ADC_MAX, N_MIN, N_MAX);
+
+    //Y-fit the ADC 1 and 2 samples into x_adc_next, and y_adc_next
+    y_fit(&adc_X, &x_adc_next, ADC_MIN, ADC_MAX, X_POS_MIN, X_POS_MAX); // x next
+    y_fit(&adc_Y, &y_adc_next, ADC_MIN, ADC_MAX, Y_POS_MIN, Y_POS_MAX); // y next
+
+    //Increment pointer for z FIR
+    if(z_counter==0) z_counter=Z_FIR_INPUT_SIZE-1; //Rollover
+    else z_counter--;
+}
+
 
 /******** swi_uart_rx_isr *******
  *
@@ -210,86 +283,86 @@ void swi_uart_rx_isr(void) {    //Turn uart interrupt off
     uart_rx(&buffer_string, &buffer_string_ready);
 
     //If buffer ready, post task for parsing
-    if(buffer_string_ready==1) Semaphore_post(sem_uart_received);
-
-    //Clear buffer string ready flag
-    buffer_string_ready=0;
-}
-
-/****** tsk_parse_rx_isr ********
- *
- * When the buffer string is full, the semaphore will be posted
- * Then this function will parse through the string
- *
- */
-void tsk_parse_rx_isr(void) {
-    //Infinite loop
-    while(1) {
-        //Complete function only when uart buffer is received
-        Semaphore_pend(sem_uart_received, BIOS_WAIT_FOREVER);
+    if(buffer_string_ready==1) {
 
         //Dump into completed string to be parsed
         strcpy(completed_string, buffer_string);
-
-        //Parse string and dump results into next x,y,z values for uart
-        parse_rx(completed_string, &x_uart_next, &y_uart_next, &z_uart_next);
 
         //Reset SCI
         EALLOW;
         SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
         EDIS;
 
-        //Once completed, post semaphore for storing values in buffer
-        Semaphore_post(sem_parse_done);
+        //Clear buffer string ready flag
+        buffer_string_ready=0;
+
+        //Post for Parsing
+        Semaphore_post(sem_parse);
     }
 }
 
+/****** tsk_parse_rx_isr ********
+ *
+ * When the buffer string is full, the semaphore will be posted
+ * Then this function will parse through the string
+ * Roughly 10us
+ */
+void tsk_parse_rx_isr(void) {
+    //Infinite loop
+    while(1) {
+        //Complete function only when uart buffer is received
+        Semaphore_pend(sem_parse, BIOS_WAIT_FOREVER);
 
+        //Parse string and dump results into next x,y,z values for uart
+        parse_rx(completed_string, &x_uart_next, &y_uart_next, &z_uart_next);
 
-/*------ FIRS ------- */ /*
-void fir_x_isr(void) {
-    moving_average(&x_array, &x, fir_N, x_counter);
-
-    if(x_counter==0) x_counter=FIR_INPUT_SIZE-1; //Rollover
-    else x_counter--;
+        //Once completed, post semaphore for storing values in buffer
+        Semaphore_post(sem_spi);
+    }
 }
 
-void fir_y_isr(void) {
-    moving_average(&y_array, &y, fir_N, y_counter);
+/****** tsk_uart_tx_isr ********
+ *
+ * Send transmission for request of PI cam coordinates
+ * Roughly 30us
+ */
+void tsk_uart_tx_isr(void) {
+    while(1) {
+        //Pend semaphore when epwm routine is done
+        Semaphore_pend(sem_uart_tx, BIOS_WAIT_FOREVER);
 
-    if(y_counter==0) y_counter=FIR_INPUT_SIZE-1; //Rollover
-    else y_counter--;
+        //Send TX
+        uart_tx_char('r');
+    }
 }
-*/
 
+/****** tsk_spi_isr ********
+ *
+ * Send transmission to other c2000 coordinates and other info
+ *
+ */
+void tsk_spi_isr(void) {
+    while(1) {
+        //Pend SPI sem twice (epwm routine and uart tx sent)
+        Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
+        Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
 
-/*----- SET SERVO PWMS -----*/
+        //Set up string of vals
 
-
-/*----- PWM TIMER -------*/
-
-
-
-
-
-/*----- DEBOUNCE BUTTON AND LISTEN ------*/
-
-
-
-
-
-
-/*------ TOOL TIP -------------*/
-
-
-
-
+        //Send SPI Buffer with array of vals
+    }
+}
 
 
 /*------------- IDLE ------------
  * Idle thread - keeps track of temperature *
  */
 void idle(void) {
+    //Sample button for Z next
+
+    //Sample button for source select
+
+    //Get temperature sample
     c2000_temp = temp_sample(true); // Clear SOC and sample temp
 
     //convert to Q15 and express it in system_printf (later used for lcd)

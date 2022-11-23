@@ -110,7 +110,7 @@ int32 temp_sample(bool soc);
 //
 // Return: none
 //***************************//
-void y_fit(int16_t *out, int16_t *in, int x_min, int x_max, int y_min, int y_max);
+void y_fit(int16_t *in, int16_t *out, int x_min, int x_max, int y_min, int y_max);
 
 #endif /* ADC_H_ */
 

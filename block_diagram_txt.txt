@@ -80,23 +80,19 @@ idle task
 //
 //
 //
-
 //SWI func prototypes
-extern const Swi_Handle swi_servo; // Pends resources and sets servos
-extern const Swi_Handle swi_adc; // Start SOCs and take vals
-extern const Swi_Handle swi_uart_tx; // Send UART transmission
+extern const Swi_Handle swi_epwm_1; // Pends resources and sets servos
+extern const Swi_Handle swi_epwm_2; // Start SOCs and take vals
 extern const Swi_Handle swi_uart_rx; // Receive UART buffer
 
 //task func prototypes
+extern const Task_Handle tsk_uart_tx; // Sends tx for cam pi coordinates
 extern const Task_Handle tsk_parse_rx; // Parses UART reception when ready
-extern const Task_Handle tsk_fir; // Force between boundaries, Shift vals, moves pointers, performs FIR
-extern const Task_Handle tsk_ikine; // Performs ikine when resources available
 extern const Task_Handle tsk_spi;   // Sends SPI values to other C2000
-extern const Task_Handle tsk_select_source; // Samples button to see if on and
+extern const Task_Handle tsk_adc; // Samples ADC sequentially
 
 //semaphores for tasks
-extern const Semaphore_Handle sem_uart_received; //Gets posted when UART buffer is full
-extern const Semaphore_Handle sem_parse_done; // Gets posted when String has been parsed
-extern const Semaphore_Handle sem_adc_done; // Gets posted when ADC vals have been received
-extern const Semaphore_Handle sem_fir_ready; //Gets posted when new values are inserted into array
-extern const Semaphore_Handle sem_ikine_ready; //Gets posted when FIR is done
+extern const Semaphore_Handle sem_parse; //Gets posted when UART buffer is full
+extern const Semaphore_Handle sem_spi; // Gets posted when String has been parsed and adc is done
+extern const Semaphore_Handle sem_adc; // Gets posted when servos have been set
+extern const Semaphore_Handle sem_uart_tx; //Gets posted when servos have been set
