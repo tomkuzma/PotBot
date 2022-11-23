@@ -54,7 +54,7 @@ void adc_init(int channels, bool temp_enable) {
         AdcRegs.INTSEL1N2.bit.INT2E = 1; // Enable ADC EOC Interrupt
     }
 
-    if(channels >= 3) {
+    if(channels >= 4) {
         //Setup for third channel (A2)
         AdcRegs.ADCSOC2CTL.bit.CHSEL = 2; // Sample channel 2
         AdcRegs.ADCSOC0CTL.bit.ACQPS = 0x6; // Minimum window
@@ -63,7 +63,7 @@ void adc_init(int channels, bool temp_enable) {
         AdcRegs.INTSEL3N4.bit.INT3E = 1; // Enable ADC EOC Interrupt
     }
 
-    if(channels >= 4) {
+    if(channels >= 3) {
         //Setup for fourth channel (A3)
         AdcRegs.ADCSOC3CTL.bit.CHSEL = 3; // Sample channel 3
         AdcRegs.ADCSOC3CTL.bit.ACQPS = 0x6; // Minimum window
@@ -152,7 +152,7 @@ int16_t adc_sample(int channel, bool soc) {
         }
         AdcRegs.ADCINTFLGCLR.bit.ADCINT2 = 1; //Clear flag
         return AdcResult.ADCRESULT1; // Return adc result channel 1
-    case 2:
+    case 3:
         //If Soc is true, start conversion
         if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC2=1; //Start conversion
@@ -160,7 +160,7 @@ int16_t adc_sample(int channel, bool soc) {
         }
         AdcRegs.ADCINTFLGCLR.bit.ADCINT3 = 1; //Clear flag
         return AdcResult.ADCRESULT2; // Return adc result channel 2
-    case 3:
+    case 2:
         //If Soc is true, start conversion
         if(soc) {
         AdcRegs.ADCSOCFRC1.bit.SOC3=1; //Start conversion

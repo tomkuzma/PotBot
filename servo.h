@@ -36,8 +36,8 @@
 
 #define SERVO_PERIOD 37499 // for 50hz
 
-#define SERVO_MAX 900   // max degrees
-#define SERVO_MIN -900     // min degrees
+#define SERVO_MAX 90   // max degrees
+#define SERVO_MIN -90     // min degrees
 
 /*****MUST CHANGE******/
 #define Z_MAX  45 // Degrees when z==1

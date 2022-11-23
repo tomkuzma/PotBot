@@ -27,8 +27,8 @@ void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start) {
    int* p = NULL;
 
    //New variable for holding output (int32 to accept overflows)
-   int32_t temp_out;
-   int32_t temp_out_divided;
+   int32_t temp_out=0;
+   int32_t temp_out_divided=0;
 
    //Iterate through input
    for (p = in + start; p < in + (start + N); ++p) {

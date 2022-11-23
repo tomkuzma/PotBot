@@ -22,13 +22,13 @@
 #define SERVO_2 1 // Channel for servo 2
 #define SERVO_Z 2 // Channel for servo 3
 
-#define ADC_COUNT 4 // amount of adcs
+#define ADC_COUNT 3 // amount of adcs
 #define ADC_POT_N 0 // pot for adc channel 0 -> FIR moving average terms/N
 #define ADC_POT_X 1 // pot for adc channel 1 -> x_next
-#define ADC_POT_Y 3 // pot for adc channel 2 -> y_next
+#define ADC_POT_Y 2 // pot for adc channel 2 -> y_next
 
-#define X_POS_MIN 30 // make sure it don't collide
-#define Y_POS_MIN 30 // make sure it don't collide
+#define X_POS_MIN 0 // make sure it don't collide
+#define Y_POS_MIN 0 // make sure it don't collide
 #define X_POS_MAX 300 // make sure it don't collide
 #define Y_POS_MAX 300 // make sure it don't collide
 
@@ -121,7 +121,7 @@ Int main()
     buffer_string_ready = 0;
     buffer_index = 0;
     fir_N = N_MIN;
-    sample_select = ADC_SAMPLE;
+    sample_select = UART_SAMPLE;
 
     //Clear UART buffer
     int j;
@@ -171,7 +171,7 @@ void swi_epwm_1_isr(void) {
     EPwm1Regs.ETCLR.bit.INT=1;
 
     //Insert next x and y value into input array, if UART
-    if(sample_select==UART_SAMPLE) {
+    if(sample_select==ADC_SAMPLE) {
         //Store x if uart
         x_array[x_counter] = x_uart_next;
         x_array[x_counter+FIR_INPUT_SIZE] = x_uart_next;
@@ -253,9 +253,9 @@ void swi_epwm_2_isr(void) {
 
     //Take ADC values (sequentially)
     int16_t adc_N, adc_X, adc_Y; //Adc result variables
-    adc_N = adc_sample(ADC_POT_N, true);
-    adc_X = adc_sample(ADC_POT_X, true);
     adc_Y = adc_sample(ADC_POT_Y, true);
+    adc_X = adc_sample(ADC_POT_X, true);
+    adc_N = adc_sample(ADC_POT_N, true);
 
     //Y-fit the ADC 0 sample into N
     y_fit(&adc_N, &fir_N, ADC_MIN, ADC_MAX, N_MIN, N_MAX);
