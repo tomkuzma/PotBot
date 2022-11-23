@@ -78,7 +78,6 @@ void uart_init(void) {
 //**************************//
 void uart_tx_char(char input) {
     //Wait until other characters have been sent
-    //while (SciaRegs.SCIFFTX.bit.TXFFST != 0)   {}
     while(SciaRegs.SCICTL2.bit.TXRDY == 0) { }
     SciaRegs.SCITXBUF=(uint16_t)input;
 }
@@ -113,7 +112,6 @@ void uart_tx_str(char *input) {
 void uart_rx(char **input_string, int *ready) {
 
     //UART INTERRUPT ROUTINE
-    SciaRegs.SCIFFRX.bit.RXFFINTCLR = 1; // Clear int flag for fifo
     strcpy(__uart_c_buffer_string, input_string);
 
     while(SciaRegs.SCIFFRX.bit.RXFFST != 0) {

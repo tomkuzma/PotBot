@@ -1,0 +1,102 @@
+
+Task decode_xyz
+	if sample source UART is selected
+	then, if buffer_string transmission from UART is complete, parse the string
+	dumps PI values into x_next, y_next, and z
+
+	otherwise, if sample source ADC is selected
+	dump adc 1 into x_next
+	dump adc 2 into y_next
+	(figure out Z, just a button?)
+
+
+HWI UART 
+	POST SWI for UART
+
+SWI UART
+	Take in RX Buffer (fourth highest priority)
+
+
+HWI PWM 1 INTERRUPT 
+
+	POST SWI for setting servos (joints 1 and 2)
+	POST SWI adc 
+	POST SWI uart transmission
+
+
+SWI Servo Set X and Y	(highest priority)
+	pend joints 1 and 2?
+	Set PWM A (joint 1)
+	Set PWM B (joint 2)
+	post joints 1 and 2?
+
+SWI timer 2:
+	send uart transmission ('r')
+	read adc 0 (always fir N)
+	read adc 1
+	read adc 2
+
+SWI shift vals and FIR	(third highest priority)
+	pend x_next, y_next and fir N, x, y?
+	Insert x_next into array
+	Increment x input pointer position
+	Insert y_next into array
+	Increment y input pointer position
+	Perform FIR of X input array to x
+	Perform FIR of Y input array to y
+	post x_next, y_next and fir N, x, y?	
+
+Task Ikine
+	Perform ikine on x, and y into joints 1, and 2
+
+
+HWI PWM 2 INTERRUPT
+	POST SWI for setting Z
+
+SWI Servo Set Z
+	Set PWM A counter (Second highest buffer)
+
+
+		MISCELLANEOUS
+
+idle task
+
+- take temperature adc (SOC -> val) and convert it to float
+- update values on LCD if we have the LCD going
+
+
+
+
+// HWI Notes:
+// HWI sources will be:
+//
+//  epwm 1 period reset
+//  epwm 2 period reset
+//  uart receive
+//
+//
+//  do we need spi rx?
+//
+//
+//
+//
+
+//SWI func prototypes
+extern const Swi_Handle swi_servo; // Pends resources and sets servos
+extern const Swi_Handle swi_adc; // Start SOCs and take vals
+extern const Swi_Handle swi_uart_tx; // Send UART transmission
+extern const Swi_Handle swi_uart_rx; // Receive UART buffer
+
+//task func prototypes
+extern const Task_Handle tsk_parse_rx; // Parses UART reception when ready
+extern const Task_Handle tsk_fir; // Force between boundaries, Shift vals, moves pointers, performs FIR
+extern const Task_Handle tsk_ikine; // Performs ikine when resources available
+extern const Task_Handle tsk_spi;   // Sends SPI values to other C2000
+extern const Task_Handle tsk_select_source; // Samples button to see if on and
+
+//semaphores for tasks
+extern const Semaphore_Handle sem_uart_received; //Gets posted when UART buffer is full
+extern const Semaphore_Handle sem_parse_done; // Gets posted when String has been parsed
+extern const Semaphore_Handle sem_adc_done; // Gets posted when ADC vals have been received
+extern const Semaphore_Handle sem_fir_ready; //Gets posted when new values are inserted into array
+extern const Semaphore_Handle sem_ikine_ready; //Gets posted when FIR is done
