@@ -128,8 +128,8 @@ Int main()
     for (j = 0; j<UART_BUFF_SIZE; j++) buffer_string[j] = NULL;
 
     //Initialize SERVOs
-    float dc_min[8] = { 0.018, 0.018, 0.018, 0,0,0,0,0}; // min duty cycle of servos
-    float dc_max[8] = { 0.118, 0.118, 0,0,0,0,0 }; // max duty cycle of servos
+    float dc_min[8] = { 0.344, 0.073, 0.377, 0,0,0,0,0 }; // min duty cycle of servos
+    float dc_max[8] = { 0.107, 0.319, 0.089, 0,0,0,0,0 }; // max duty cycle of servos
     servo_init(SERVO_COUNT, dc_min, dc_max); // initialize 2 servos
 
     //Initialize ADCs
@@ -202,7 +202,7 @@ void swi_epwm_1_isr(void) {
 
     //Set servo 1 and 2 duty cycles
     servo_set(SERVO_1, joint_1);
-    servo_set(SERVO_2, joint_2-90); //-90 to account for 90 deg offset being in joint 2 position brings you
+    servo_set(SERVO_2, joint_2+SERVO_MIN); //-90 degrees to account for 90 deg offset being in joint 2 position brings you
 
     //Increment pointer for x FIR
     if(x_counter==0) x_counter=FIR_INPUT_SIZE-1; //Rollover
@@ -359,12 +359,19 @@ void tsk_spi_isr(void) {
  */
 void idle(void) {
     //Sample button for Z next
+    sample_select = GpioDataRegs.GPADAT.bit.GPIO6;
 
     //Sample button for source select
+    z_switch_next = GpioDataRegs.GPADAT.bit.GPIO7;
 
     //Get temperature sample
     c2000_temp = temp_sample(true); // Clear SOC and sample temp
 
     //convert to Q15 and express it in system_printf (later used for lcd)
     real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
+
+    //Turn LED on if temp is above 50degs .. Else turn LED off
+    if(real_temp >= 50) GpioDataRegs.GPASET.bit.GPIO12;
+    else GpioDataRegs.GPACLEAR.bit.GPIO12;
+
 }

@@ -71,13 +71,13 @@ void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y) {
         num1 = num1 >> 6;
         denom1 = denom1 >> 6;
     }
-    int32_t joint_temp = 2*atan2_fp(num1/10,denom1/10);
+    int32_t joint_temp = 20*atan2_fp(num1/10,denom1/10);
     if (neg_flag==1) *joint1 = -joint_temp;
     else *joint1 = joint_temp;
 
 
     //For joint 2
-    *joint2 = 2*atan2_fp(sqrt_i32(90000 - y*y - x*x),sqrt_i32(x*x + y*y));
+    *joint2 = 20*atan2_fp(sqrt_i32(90000 - y*y - x*x),sqrt_i32(x*x + y*y));
 }
 
 //********** sqrt_i32 **********//

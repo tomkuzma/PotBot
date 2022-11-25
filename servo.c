@@ -32,7 +32,7 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
 
     //This will need to be set up no matter how many servos
     SysCtrlRegs.PCLKCR1.bit.EPWM1ENCLK = 1;  // ePWM1
-    EPwm1Regs.TBPRD = SERVO_PERIOD;
+    EPwm1Regs.TBPRD = SERVO_PERIOD-1;
     EPwm1Regs.CMPA.half.CMPA = 0; // for reference - this is what sets PWM duty cycle
     EPwm1Regs.CMPB = 0; // for reference - this is what sets PWM duty cycle
     EPwm1Regs.TBCTR = 0; // clear TB counter
@@ -65,7 +65,7 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
         }
 
         SysCtrlRegs.PCLKCR1.bit.EPWM2ENCLK = 1;  // ePWM2
-        EPwm2Regs.TBPRD = SERVO_PERIOD;
+        EPwm2Regs.TBPRD = SERVO_PERIOD-1;
         EPwm2Regs.CMPA.half.CMPA = 0; // for reference - this is what sets PWM duty cycle
         EPwm2Regs.CMPB = 0; // for reference - this is what sets PWM duty cycle
         EPwm2Regs.TBCTR = 0; // clear TB counter
@@ -91,7 +91,7 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
         }
 
         SysCtrlRegs.PCLKCR1.bit.EPWM3ENCLK = 1;  // ePWM3
-        EPwm3Regs.TBPRD = SERVO_PERIOD;
+        EPwm3Regs.TBPRD = SERVO_PERIOD-1;
         EPwm3Regs.CMPA.half.CMPA = 0; // for reference - this is what sets PWM duty cycle
         EPwm3Regs.CMPB = 0; // for reference - this is what sets PWM duty cycle
         EPwm3Regs.TBCTR = 0; // clear TB counter
@@ -117,7 +117,7 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
         }
 
         SysCtrlRegs.PCLKCR1.bit.EPWM4ENCLK = 1;  // ePWM4
-        EPwm4Regs.TBPRD = SERVO_PERIOD;
+        EPwm4Regs.TBPRD = SERVO_PERIOD-1;
         EPwm4Regs.CMPA.half.CMPA = 0; // for reference - this is what sets PWM duty cycle
         EPwm4Regs.CMPB = 0; // for reference - this is what sets PWM duty cycle
         EPwm4Regs.TBCTR = 0; // clear TB counter
@@ -141,11 +141,6 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
 
     }
 }
-
-// Return : None
-//
-//**************************//
-void servo_init(int servos, float dc_min[8], float dc_max[8]);
 
 
 //****** servo_set  ********//
