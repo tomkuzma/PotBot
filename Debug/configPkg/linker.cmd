@@ -85,22 +85,23 @@
 /* Content from xdc.cfg (null): */
 
 /* Content from ti.catalog.c2800.init (ti/catalog/c2800/init/linkcmd.xdt): */
+-u _ti_catalog_c2800_init_Boot_entry
 
 /* Content from ti.platforms.tms320x28 (null): */
 
-/* Content from ti.sysbios (null): */
+/* Content from ti.sysbios.family.c28 (null): */
 
 /* Content from ti.sysbios.hal (null): */
 
 /* Content from ti.sysbios.knl (null): */
 
-/* Content from ti.sysbios.family.c28 (null): */
+/* Content from ti.sysbios (null): */
+
+/* Content from ti.sysbios.utils (null): */
 
 /* Content from ti.sysbios.gates (null): */
 
 /* Content from ti.sysbios.xdcruntime (null): */
-
-/* Content from ti.sysbios.utils (null): */
 
 /* Content from configPkg (null): */
 
@@ -119,6 +120,7 @@ _xdc_rov_runtime_Mon__write = 1;
 
 SECTIONS
 {
+    .ti_catalog_c2800_init_begin: load > BEGIN
 
 
     xdc.meta: type = COPY
