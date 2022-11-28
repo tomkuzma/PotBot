@@ -15,25 +15,23 @@
 // Mainly, adding another ISR for testing, and adding another idle thread
 //defines:
 
-int test_counter = 0 ;
-
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
 
-#define SWI_PERIOD 4 // How many instances of the PWM before the swi gets called
+#define SWI_PERIOD 1 // How many instances of the PWM before the swi gets called
 
-#define SERVO_COUNT 3 // amount of servos
-#define SERVO_1 0 // Channel for servo 1
-#define SERVO_2 1 // Channel for servo 2
-#define SERVO_Z 2 // Channel for servo 3
+#define SERVO_COUNT 4 // amount of servos
+#define SERVO_1 2 // Channel for servo 1
+#define SERVO_2 3 // Channel for servo 2
+#define SERVO_Z 1 // Channel for servo 3
 
 #define ADC_COUNT 3 // amount of adcs
 #define ADC_POT_N 0 // pot for adc channel 0 -> FIR moving average terms/N
-#define ADC_POT_X 1 // pot for adc channel 1 -> x_next
-#define ADC_POT_Y 2 // pot for adc channel 2 -> y_next
+#define ADC_POT_X 2 // pot for adc channel 1 -> x_next
+#define ADC_POT_Y 1 // pot for adc channel 2 -> y_next
 
-#define X_POS_MIN 0 // make sure it don't collide
-#define Y_POS_MIN 0 // make sure it don't collide
+#define X_POS_MIN 1 // make sure it don't collide
+#define Y_POS_MIN 1 // make sure it don't collide
 #define X_POS_MAX 300 // make sure it don't collide
 #define Y_POS_MAX 300 // make sure it don't collide
 
@@ -42,8 +40,8 @@ int asdf_test;
 int adsf_test_2;
 
 enum {
-    UART_SAMPLE,
-    ADC_SAMPLE
+    ADC_SAMPLE,
+    UART_SAMPLE
 }; // Sample sources
 
 //includes:
@@ -136,10 +134,11 @@ Int main()
     for (j = 0; j<UART_BUFF_SIZE; j++) buffer_string[j] = NULL;
 
     //Initialize SERVOs
-    float dc_min[8] = { 0.344, 0.073, 0.377, 0,0,0,0,0 }; // min duty cycle of servos
-    float dc_max[8] = { 0.107, 0.319, 0.089, 0,0,0,0,0 }; // max duty cycle of servos
+    float dc_min[8] = { 0, 0.503, 0.458, 0.097, 0,0,0,0 }; // min duty cycle of servos
+    float dc_max[8] = { 0, 0.119, 0.142, 0.426, 0,0,0,0 }; // max duty cycle of servos
+
     servo_init(SERVO_COUNT, dc_min, dc_max); // initialize 2 servos
-    led_pwm_init(); // Initializes PWM for temperature
+    //led_pwm_init(); // Initializes PWM for temperature
 
     //Initialize ADCs
     adc_init(3,true); //Initialize 3 ADC channels, and turn temperature sensor on
@@ -165,7 +164,7 @@ void hwi_epwm_1_isr(void)
 
     //Post routine for epwm 1
     if(swi_counter==0)
-        Swi_post(swi_epwm_1);
+        Swi_post(swi_epwm_2);
 }
 
 void hwi_epwm_2_isr(void)
@@ -175,7 +174,7 @@ void hwi_epwm_2_isr(void)
 
     //Post routine for epwm 2
     if(swi_counter==0)
-        Swi_post(swi_epwm_2);
+        Swi_post(swi_epwm_1);
 }
 
 void hwi_uart_rx_isr(void)
@@ -194,7 +193,7 @@ void hwi_uart_rx_isr(void)
 void swi_epwm_1_isr(void)
 {
     //If UART buffer is full, and stays full, reset the buffer
-    if(SciaRegs.SCIFFRX.bit.RXFFST = 4) {
+    if(SciaRegs.SCIFFRX.bit.RXFFOVF == 1) {
         EALLOW;
         SciaRegs.SCICTL1.bit.SWRESET=0; // Reset SCI
         SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
@@ -265,28 +264,27 @@ void swi_epwm_1_isr(void)
 void swi_epwm_2_isr(void)
 {
     //Insert next z value into input array, if UART
-    if(sample_select==UART_SAMPLE)
+    if(sample_select==0)
     {
-        z_array[z_counter] = z_uart_next;
-        z_array[z_counter+Z_FIR_INPUT_SIZE] = z_uart_next;
+        z=z_uart_next;
     }
     //Insert next z into input array, if ADC
     else
     {
-        z_array[z_counter] = z_switch_next;
-        z_array[z_counter+Z_FIR_INPUT_SIZE] = z_switch_next;
+        z=z_switch_next;
     }
 
     //Perform FIR on Z (input array 10, but moving average size 5), STore output value into Z
-    moving_average(&z_array, &z, Z_FIR_INPUT_SIZE, z_counter);
+    //moving_average(&z_array, &z, Z_FIR_INPUT_SIZE, z_counter);
+
 
     //Assign a value to the servo
     int16_t joint_z;
-    if(z == 1) joint_z = Z_MAX;
-    else joint_z = Z_MIN;
+    if(z == 0) SERVO_2_REG = 1115;
+    else SERVO_2_REG = 4830;
 
     //Set servo to Z
-    servo_set(SERVO_Z, joint_z);
+    //servo_set(SERVO_Z, joint_z);
 
     //Take ADC values (sequentially)
     int16_t adc_N, adc_X, adc_Y; //Adc result variables
@@ -314,7 +312,8 @@ void swi_epwm_2_isr(void)
  *
  */
 void swi_uart_rx_isr(void)
-{    //Turn uart interrupt off
+{
+    //Turn uart interrupt off
     SciaRegs.SCIFFRX.bit.RXFFINTCLR = 1; // Clear int flag for fifo
 
     // Take care of transmission
@@ -325,11 +324,6 @@ void swi_uart_rx_isr(void)
     {
         //Dump into completed string to be parsed
         strcpy(completed_string, buffer_string);
-
-        //Reset SCI
-        EALLOW;
-        SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
-        EDIS;
 
         //Clear buffer string ready flag
         buffer_string_ready=0;
@@ -355,7 +349,6 @@ void tsk_parse_rx_isr(void)
 
         //Parse string and dump results into next x,y,z values for uart
         parse_rx(completed_string, &x_uart_next, &y_uart_next, &z_uart_next);
-
         //Once completed, post semaphore for storing values in buffer
         Semaphore_post(sem_spi);
     }
@@ -370,14 +363,13 @@ void tsk_uart_tx_isr(void)
 {
     while(1)
     {
-        GpioDataRegs.GPBSET.bit.GPIO34=1;
         //Pend semaphore when epwm routine is done
         Semaphore_pend(sem_uart_tx, BIOS_WAIT_FOREVER);
 
+        //if()
         //Send TX
         uart_tx_char('r');
 
-        GpioDataRegs.GPBCLEAR.bit.GPIO34=1;
     }
 }
 
@@ -390,20 +382,16 @@ void tsk_spi_isr(void)
 {
     while(1)
     {
-
         //Pend SPI sem twice (epwm routine and uart tx sent)
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
 
-        GpioDataRegs.GPASET.bit.GPIO12=1;
 
         //Send SPI Buffer with array of vals
         spi_send_int(x, X_PARAM);
         spi_send_int(y, Y_PARAM);
         spi_send_int(joint_1/10, Q1_PARAM);
         spi_send_int(joint_2/10, Q2_PARAM);
-
-        GpioDataRegs.GPACLEAR.bit.GPIO12=1;
     }
 }
 
@@ -414,18 +402,18 @@ void tsk_spi_isr(void)
 void idle(void)
 {
     //Sample button for Z next
-    sample_select = GpioDataRegs.GPADAT.bit.GPIO6;
+    sample_select = !GpioDataRegs.GPADAT.bit.GPIO6;
 
     //Sample button for source select
-    z_switch_next = GpioDataRegs.GPADAT.bit.GPIO7;
+    z_switch_next = !GpioDataRegs.GPADAT.bit.GPIO7;
 
     //Get temperature sample
     c2000_temp = temp_sample(true); // Clear SOC and sample temp
 
-    //convert to Q15 and express it in system_printf (later used for lcd)
+    //convert to Q15 and express it in system_printf (later used for led)
     real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
 
     //PWM set the LED
-    led_pwm_set(real_temp);
+    //led_pwm_set(real_temp);
 }
 

@@ -116,7 +116,7 @@ void uart_rx(char **input_string, int *ready)
     //UART INTERRUPT ROUTINE
     strcpy(__uart_c_buffer_string, input_string);
 
-    while(SciaRegs.SCIFFRX.bit.RXFFST != 0) {
+    while(SciaRegs.SCIFFRX.bit.RXFFST != 0 && SciaRegs.SCIFFRX.bit.RXFFOVF == 0) {
 
         //Dump result into buffer, parse into string
         uint16_t buffer_int = SciaRegs.SCIRXBUF.all; //for dumping whole word into

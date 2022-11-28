@@ -57,27 +57,31 @@ void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start) {
 //**************************//
 void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y) {
 
-    //For joint 1
-    int32_t num1 = 300*y - sqrt_i32(90000*y*y - y*y*y*y + 90000*x*x - 2*x*x*y*y - x*x*x*x);
-    int32_t denom1 = (x*x + 300*x + y*y);
-    int neg_flag = 0;
-    if (num1 < 0) {
-        neg_flag = 1;
-        num1 = -num1;
-    }
-    //The fixed-point atan seems to have a problem with going out of range, so if the denom or num are big,
-    //Then bit shift both the num or denom so the function can handle it
-    if(num1 > 10000 || denom1 > 10000) {
-        num1 = num1 >> 6;
-        denom1 = denom1 >> 6;
-    }
-    int32_t joint_temp = 20*atan2_fp(num1/10,denom1/10);
-    if (neg_flag==1) *joint1 = -joint_temp;
-    else *joint1 = joint_temp;
+    if(sqrt_i32(x*x + y*y) < 300) {
+
+        //For joint 1
+        int32_t num1 = 300*y - sqrt_i32(90000*y*y - y*y*y*y + 90000*x*x - 2*x*x*y*y - x*x*x*x);
+        int32_t denom1 = (x*x + 300*x + y*y);
+        int neg_flag = 0;
+        if (num1 < 0) {
+            neg_flag = 1;
+            num1 = -num1;
+        }
+        //The fixed-point atan seems to have a problem with going out of range, so if the denom or num are big,
+        //Then bit shift both the num or denom so the function can handle it
+        if(num1 > 10000 || denom1 > 10000) {
+            num1 = num1 >> 6;
+            denom1 = denom1 >> 6;
+        }
+        int32_t joint_temp = 20*atan2_fp(num1/10,denom1/10);
+        if (neg_flag==1) *joint1 = -joint_temp;
+        else *joint1 = joint_temp;
 
 
-    //For joint 2
-    *joint2 = 20*atan2_fp(sqrt_i32(90000 - y*y - x*x),sqrt_i32(x*x + y*y));
+        //For joint 2
+        *joint2 = 20*atan2_fp(sqrt_i32(90000 - y*y - x*x),sqrt_i32(x*x + y*y));
+
+    }
 }
 
 //********** sqrt_i32 **********//

@@ -6767,12 +6767,12 @@ ti_sysbios_knl_Swi_Object__ ti_sysbios_knl_Swi_Object__table__V[3] = {
         ((xdc_Void(*)(xdc_UArg f_arg0,xdc_UArg f_arg1))(swi_uart_rx_isr)),  /* fxn */
         ((xdc_UArg)(0x0)),  /* arg0 */
         ((xdc_UArg)(0x0)),  /* arg1 */
-        (xdc_UInt)0xdU,  /* priority */
-        (xdc_UInt)0x2000U,  /* mask */
+        (xdc_UInt)0xcU,  /* priority */
+        (xdc_UInt)0x1000U,  /* mask */
         0,  /* posted */
         (xdc_UInt)0x0U,  /* initTrigger */
         (xdc_UInt)0x0U,  /* trigger */
-        (ti_sysbios_knl_Queue_Handle)&ti_sysbios_knl_Swi_Module_State_0_readyQ__A[13],  /* readyQ */
+        (ti_sysbios_knl_Queue_Handle)&ti_sysbios_knl_Swi_Module_State_0_readyQ__A[12],  /* readyQ */
         ((void*)0),  /* hookEnv */
     },
     {/* instance#1 */
@@ -6783,12 +6783,12 @@ ti_sysbios_knl_Swi_Object__ ti_sysbios_knl_Swi_Object__table__V[3] = {
         ((xdc_Void(*)(xdc_UArg f_arg0,xdc_UArg f_arg1))(swi_epwm_1_isr)),  /* fxn */
         ((xdc_UArg)(0x0)),  /* arg0 */
         ((xdc_UArg)(0x0)),  /* arg1 */
-        (xdc_UInt)0xfU,  /* priority */
-        (xdc_UInt)0x8000U,  /* mask */
+        (xdc_UInt)0xeU,  /* priority */
+        (xdc_UInt)0x4000U,  /* mask */
         0,  /* posted */
         (xdc_UInt)0x0U,  /* initTrigger */
         (xdc_UInt)0x0U,  /* trigger */
-        (ti_sysbios_knl_Queue_Handle)&ti_sysbios_knl_Swi_Module_State_0_readyQ__A[15],  /* readyQ */
+        (ti_sysbios_knl_Queue_Handle)&ti_sysbios_knl_Swi_Module_State_0_readyQ__A[14],  /* readyQ */
         ((void*)0),  /* hookEnv */
     },
     {/* instance#2 */
@@ -6799,12 +6799,12 @@ ti_sysbios_knl_Swi_Object__ ti_sysbios_knl_Swi_Object__table__V[3] = {
         ((xdc_Void(*)(xdc_UArg f_arg0,xdc_UArg f_arg1))(swi_epwm_2_isr)),  /* fxn */
         ((xdc_UArg)(0x0)),  /* arg0 */
         ((xdc_UArg)(0x0)),  /* arg1 */
-        (xdc_UInt)0xeU,  /* priority */
-        (xdc_UInt)0x4000U,  /* mask */
+        (xdc_UInt)0xdU,  /* priority */
+        (xdc_UInt)0x2000U,  /* mask */
         0,  /* posted */
         (xdc_UInt)0x0U,  /* initTrigger */
         (xdc_UInt)0x0U,  /* trigger */
-        (ti_sysbios_knl_Queue_Handle)&ti_sysbios_knl_Swi_Module_State_0_readyQ__A[14],  /* readyQ */
+        (ti_sysbios_knl_Queue_Handle)&ti_sysbios_knl_Swi_Module_State_0_readyQ__A[13],  /* readyQ */
         ((void*)0),  /* hookEnv */
     },
 };
@@ -7297,8 +7297,8 @@ ti_sysbios_knl_Task_Object__ ti_sysbios_knl_Task_Object__table__V[4] = {
             ((ti_sysbios_knl_Queue_Elem*)((void*)&ti_sysbios_knl_Task_Object__table__V[0].qElem)),  /* next */
             ((ti_sysbios_knl_Queue_Elem*)((void*)&ti_sysbios_knl_Task_Object__table__V[0].qElem)),  /* prev */
         },  /* qElem */
-        (xdc_Int)0x8,  /* priority */
-        (xdc_UInt)0x100U,  /* mask */
+        (xdc_Int)0x9,  /* priority */
+        (xdc_UInt)0x200U,  /* mask */
         ((xdc_Ptr)NULL),  /* context */
         ti_sysbios_knl_Task_Mode_INACTIVE,  /* mode */
         ((ti_sysbios_knl_Task_PendElem*)NULL),  /* pendElem */
@@ -9263,7 +9263,7 @@ asm("	.clink ");
 asm("	.sect \"[1].econst:xdc_runtime_Error_policy__C\"");
 asm("	.clink ");
 
-__FAR__ const CT__xdc_runtime_Error_policy xdc_runtime_Error_policy__C = xdc_runtime_Error_UNWIND;
+__FAR__ const CT__xdc_runtime_Error_policy xdc_runtime_Error_policy__C = xdc_runtime_Error_TERMINATE;
 
 /* raiseHook__C */
 #pragma DATA_SECTION(xdc_runtime_Error_raiseHook__C, ".econst:xdc_runtime_Error_raiseHook__C");

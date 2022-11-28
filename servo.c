@@ -62,11 +62,9 @@ void servo_init(int servos, float dc_min[8], float dc_max[8])
         GpioCtrlRegs.GPAMUX1.bit.GPIO2 = 1;     // 0=GPIO,  1=EPWM1A,  2=Resv,  3=Resv
         GpioCtrlRegs.GPAPUD.bit.GPIO2 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
 
-        if(servos > 3)
-        {
-            GpioCtrlRegs.GPAMUX1.bit.GPIO3 = 1;     // 0=GPIO,  1=EPWM1B,  2=EMU0,  3=COMP1OUT
-            GpioCtrlRegs.GPAPUD.bit.GPIO3 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
-        }
+        GpioCtrlRegs.GPAMUX1.bit.GPIO3 = 1;     // 0=GPIO,  1=EPWM1B,  2=EMU0,  3=COMP1OUT
+        GpioCtrlRegs.GPAPUD.bit.GPIO3 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
+
 
         SysCtrlRegs.PCLKCR1.bit.EPWM2ENCLK = 1;  // ePWM2
         EPwm2Regs.TBPRD = SERVO_PERIOD-1;
@@ -160,13 +158,13 @@ void servo_init(int servos, float dc_min[8], float dc_max[8])
 // Return : None
 //
 //**************************//
-int16_t input_conv;
 
 void servo_set(uint16_t channel, int16_t input) {
 
     //Vars for calculating servo position
 
 
+    int16_t input_conv;
     //Convert value for PWM
     //input_conv = ((uint32_t) __servos_c_pwm_max[channel] - (uint32_t) __servos_c_pwm_min[channel]) * ((uint32_t) input - (uint32_t) )/ (SERVO_MAX - SERVO-MIN) + (uint32_t) __servos_c_pwm_min[channel];
     y_fit(&input, &input_conv, SERVO_MIN, SERVO_MAX, __servos_c_pwm_min[channel], __servos_c_pwm_max[channel]);
