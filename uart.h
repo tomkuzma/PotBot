@@ -23,7 +23,12 @@
 #define RX_READY '1' //Ready for next transmission
 #define UART_BUFF_SIZE 14 // Length of uart character array
 
+#ifndef TESTING_DEF
 #include "Headers/F2802x_device.h"
+#else
+#include "Peripheral_Headers/F2802x_device.h"
+#endif
+
 #include <string.h>
 
 //****** uart_init ********//

@@ -23,7 +23,8 @@ uint16_t __servos_c_pwm_max[8];
 // Return : None
 //
 //**************************//
-void servo_init(int servos, float dc_min[8], float dc_max[8]) {
+void servo_init(int servos, float dc_min[8], float dc_max[8])
+{
     EALLOW; //Edit protected reg's
 
     SysCtrlRegs.PCLKCR0.bit.TBCLKSYNC = 1;   // Enable TBCLK
@@ -48,18 +49,21 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
     GpioCtrlRegs.GPAMUX1.bit.GPIO0 = 1;     // 0=GPIO,  1=EPWM1A,  2=Resv,  3=Resv
     GpioCtrlRegs.GPAPUD.bit.GPIO0 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
 
-    if(servos > 1) {
+    if(servos > 1)
+    {
         GpioCtrlRegs.GPAMUX1.bit.GPIO1 = 1;     // 0=GPIO,  1=EPWM1B,  2=EMU0,  3=COMP1OUT
         GpioCtrlRegs.GPAPUD.bit.GPIO1 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
     }
 
     //Setup for PWM 2, if there's 3-4 servos
-    if (servos > 2) {
+    if (servos > 2)
+    {
 
         GpioCtrlRegs.GPAMUX1.bit.GPIO2 = 1;     // 0=GPIO,  1=EPWM1A,  2=Resv,  3=Resv
         GpioCtrlRegs.GPAPUD.bit.GPIO2 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
 
-        if(servos > 3) {
+        if(servos > 3)
+        {
             GpioCtrlRegs.GPAMUX1.bit.GPIO3 = 1;     // 0=GPIO,  1=EPWM1B,  2=EMU0,  3=COMP1OUT
             GpioCtrlRegs.GPAPUD.bit.GPIO3 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
         }
@@ -80,12 +84,13 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
     }
 
     //Setup for PWM 3, if there's 5-6 servos
-    if (servos > 4) {
-
+    if (servos > 4)
+    {
         GpioCtrlRegs.GPAMUX1.bit.GPIO4 = 1;     // 0=GPIO,  1=EPWM1A,  2=Resv,  3=Resv
         GpioCtrlRegs.GPAPUD.bit.GPIO4 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
 
-        if(servos > 5) {
+        if(servos > 5)
+        {
             GpioCtrlRegs.GPAMUX1.bit.GPIO5 = 1;     // 0=GPIO,  1=EPWM1B,  2=EMU0,  3=COMP1OUT
             GpioCtrlRegs.GPAPUD.bit.GPIO5 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
         }
@@ -106,12 +111,14 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
     }
 
     //Setup for PWM 4, if there's 7-8 servos
-    if (servos > 6) {
+    if (servos > 6)
+    {
 
         GpioCtrlRegs.GPAMUX1.bit.GPIO6 = 1;     // 0=GPIO,  1=EPWM1A,  2=Resv,  3=Resv
         GpioCtrlRegs.GPAPUD.bit.GPIO6 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
 
-        if(servos > 7) {
+        if(servos > 7)
+        {
             GpioCtrlRegs.GPAMUX1.bit.GPIO7 = 1;     // 0=GPIO,  1=EPWM1B,  2=EMU0,  3=COMP1OUT
             GpioCtrlRegs.GPAPUD.bit.GPIO7 = 1;    // Disable pull-up on GPIO1 (EPWM1B)
         }
@@ -135,10 +142,10 @@ void servo_init(int servos, float dc_min[8], float dc_max[8]) {
 
     //Set PWM Mins
     int i = 0;
-    for(i = 0; i<servos; i++) {
+    for(i = 0; i<servos; i++)
+    {
         __servos_c_pwm_min[i] = (float) SERVO_PERIOD * dc_min[i];
         __servos_c_pwm_max[i] = (float) SERVO_PERIOD * dc_max[i];
-
     }
 }
 
@@ -210,7 +217,8 @@ void servo_set(uint16_t channel, int16_t input) {
 // Return : None
 //
 //**************************//
-void enable_epwm_interrupts(int servos) {
+void enable_epwm_interrupts(int servos)
+{
     //Allow changing regs
     EALLOW;
 
@@ -222,17 +230,20 @@ void enable_epwm_interrupts(int servos) {
     EPwm1Regs.ETSEL.bit.INTSEL = 1; //Enable event time-base counter equal to zero.
     EPwm1Regs.ETPS.bit.INTPRD = 1; // Trigger interrupt *any* time EPWM period is 0
 
-    if(servos>2) {
+    if(servos>2)
+    {
         EPwm2Regs.ETSEL.bit.INTEN = 1; // Enable interrupt for servo1-2
         EPwm2Regs.ETSEL.bit.INTSEL = 1; //Enable event time-base counter equal to zero.
         EPwm2Regs.ETPS.bit.INTPRD = 1; // Trigger interrupt *any* time EPWM period is 0
     }
-    if(servos>4) {
+    if(servos>4)
+    {
         EPwm3Regs.ETSEL.bit.INTEN = 1; // Enable interrupt for servo1-2
         EPwm3Regs.ETSEL.bit.INTSEL = 1; //Enable event time-base counter equal to zero.
         EPwm3Regs.ETPS.bit.INTPRD = 1; // Trigger interrupt *any* time EPWM period is 0
     }
-    if(servos>6) {
+    if(servos>6)
+    {
         EPwm4Regs.ETSEL.bit.INTEN = 1; // Enable interrupt for servo1-2
         EPwm4Regs.ETSEL.bit.INTSEL = 1; //Enable event time-base counter equal to zero.
         EPwm4Regs.ETPS.bit.INTPRD = 1; // Trigger interrupt *any* time EPWM period is 0
@@ -242,3 +253,64 @@ void enable_epwm_interrupts(int servos) {
     EDIS;
 }
 
+//****** led_pwm_init  ********//
+//
+// Initialize PWM 3 for LED, if need be
+//
+// Arguments:
+// None
+//
+// Return : None
+//
+//**************************//
+void led_pwm_init()
+{
+    EALLOW;
+    GpioCtrlRegs.GPAMUX1.bit.GPIO4 = 1;     // 0=GPIO,  1=EPWM1A,  2=Resv,  3=Resv
+    GpioCtrlRegs.GPAPUD.bit.GPIO4 = 1;    // Disable pull-up on GPIO0 (EPWM1A)
+    SysCtrlRegs.PCLKCR1.bit.EPWM3ENCLK = 1;  // ePWM3
+    EPwm3Regs.TBPRD = LED_PERIOD-1; // should be 1000Hz-ish
+    EPwm3Regs.CMPA.half.CMPA = 0; // for reference - this is what sets PWM duty cycle
+    EPwm3Regs.CMPB = 0; // for reference - this is what sets PWM duty cycle
+    EPwm3Regs.TBCTR = 0; // clear TB counter
+    EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP; // Counter mode, Counts from 0 -> TBPRD
+    EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_DISABLE; // Disable synchronization output
+    EPwm3Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1; // Divide clock by 4
+    EPwm3Regs.TBCTL.bit.CLKDIV = TB_DIV32; // Divide clock by 8
+    EPwm3Regs.AQCTLA.bit.ZRO = AQ_SET;   // Force EPWM High when counter resets
+    EPwm3Regs.AQCTLA.bit.CAU = AQ_CLEAR; // Force EPWM Low when counter == CMPB
+    EPwm3Regs.AQCTLB.bit.ZRO = AQ_SET;   // Force EPWM High when counter resets
+    EPwm3Regs.AQCTLB.bit.CBU = AQ_CLEAR; // Force EPWM Low when counter == CMPB
+    EDIS;
+}
+
+//****** led_pwm_set  ********//
+//
+// Clears spurious ePWM flags and enables ePWM interrupts
+//
+// Arguments:
+// float temp - temperature of real_temp, maxes out at 120, mins out at 10
+//
+// Return : None
+//
+//**************************//
+void led_pwm_set(float temp)
+{
+    int16_t temp_int = (int16_t) temp;
+    int16_t temp_pwm;
+
+    //Put between boundaries of 10 and 120
+    if(temp_int > 120)
+        temp_int=120;
+
+    if(temp_int < 10)
+        temp_int=10;
+
+    //Change value from 10-120 to PWM vals
+    y_fit(&temp_int, &temp_pwm, 10, 120, 0, 1874);
+
+    //Store value in PWM
+    EALLOW;
+    EPwm3Regs.CMPA.half.CMPA = temp_pwm;
+    EDIS;
+}

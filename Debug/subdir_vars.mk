@@ -19,6 +19,7 @@ C_SRCS += \
 ../dsp.c \
 ../main.c \
 ../servo.c \
+../spi.c \
 ../uart.c 
 
 GEN_CMDS += \
@@ -38,6 +39,7 @@ C_DEPS += \
 ./dsp.d \
 ./main.d \
 ./servo.d \
+./spi.d \
 ./uart.d 
 
 GEN_OPTS += \
@@ -50,6 +52,7 @@ OBJS += \
 ./dsp.obj \
 ./main.obj \
 ./servo.obj \
+./spi.obj \
 ./uart.obj 
 
 GEN_MISC_DIRS__QUOTED += \
@@ -62,6 +65,7 @@ OBJS__QUOTED += \
 "dsp.obj" \
 "main.obj" \
 "servo.obj" \
+"spi.obj" \
 "uart.obj" 
 
 C_DEPS__QUOTED += \
@@ -71,6 +75,7 @@ C_DEPS__QUOTED += \
 "dsp.d" \
 "main.d" \
 "servo.d" \
+"spi.d" \
 "uart.d" 
 
 GEN_FILES__QUOTED += \
@@ -84,6 +89,7 @@ C_SRCS__QUOTED += \
 "../dsp.c" \
 "../main.c" \
 "../servo.c" \
+"../spi.c" \
 "../uart.c" 
 
 

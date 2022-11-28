@@ -24,8 +24,8 @@ char __uart_c_buffer_string[UART_BUFF_SIZE]; // character array to stuff vals in
 // Return : None
 //
 //**************************//
-void uart_init(void) {
-
+void uart_init(void)
+{
     //initialize uart globals
     __uart_c_buffer_index=0;
 
@@ -76,7 +76,8 @@ void uart_init(void) {
 // Return : None
 //
 //**************************//
-void uart_tx_char(char input) {
+void uart_tx_char(char input)
+{
     //Wait until other characters have been sent
     while(SciaRegs.SCICTL2.bit.TXRDY == 0) { }
     SciaRegs.SCITXBUF=(uint16_t)input;
@@ -92,7 +93,8 @@ void uart_tx_char(char input) {
 // Return : None
 //
 //**************************//
-void uart_tx_str(char *input) {
+void uart_tx_str(char *input)
+{
     //Iterate through loop until end of character
     int i=0; //Create index
     while(input[i] != '\0') uart_tx_char(input[i++]);
@@ -109,8 +111,8 @@ void uart_tx_str(char *input) {
 // Return : None
 //
 //**************************//
-void uart_rx(char **input_string, int *ready) {
-
+void uart_rx(char **input_string, int *ready)
+{
     //UART INTERRUPT ROUTINE
     strcpy(__uart_c_buffer_string, input_string);
 
@@ -124,7 +126,8 @@ void uart_rx(char **input_string, int *ready) {
         *ready = 0;
 
         //Make decision of indexing based on character
-        if(buffer=='X') {
+        if(buffer=='x')
+        {
             //Restart buffer index
             __uart_c_buffer_index=0;
 
@@ -135,7 +138,9 @@ void uart_rx(char **input_string, int *ready) {
             __uart_c_buffer_string[__uart_c_buffer_index] = (char) buffer;
             __uart_c_buffer_index++; //increment buffer
 
-        } else if(buffer=='T' || buffer=='F') {
+        }
+        else if(buffer=='T' || buffer=='F')
+        {
             //Dump T or F in last variable
             __uart_c_buffer_string[__uart_c_buffer_index]= (char) buffer;
             __uart_c_buffer_index++;
@@ -144,7 +149,9 @@ void uart_rx(char **input_string, int *ready) {
 
             //Signal flag that string can be dumped and processed
             *ready=1;
-        } else {
+        }
+        else
+        {
             //dump buffer in appropriate spot in buffer string
             __uart_c_buffer_string[__uart_c_buffer_index] = (char) buffer;
             __uart_c_buffer_index++; //Increment buffer
@@ -171,7 +178,7 @@ void uart_rx(char **input_string, int *ready) {
 //**************************//
 int parse_rx(char * string, int16_t *x, int16_t *y, int16_t *z) {
     int digs; // number of digits to process
-    char* compare_str = "XYZ"; // To compare the direction chars
+    char* compare_str = "xyz"; // To compare the direction chars
 
     int temp_xyz[] = { 0,0,0 }; // To store digits temporarily before offloading to xyz ints
 
@@ -180,29 +187,33 @@ int parse_rx(char * string, int16_t *x, int16_t *y, int16_t *z) {
     int inner_ind; // For storing the digits in
     int scalar_ind; // For scaling from 1-100
 
-    for (outer_ind = 0; outer_ind < 3; outer_ind++) {
-
+    for (outer_ind = 0; outer_ind < 3; outer_ind++)
+    {
        //If character bytes aren't x, y, z, return error
-       if (string[str_ind++] != compare_str[outer_ind]) return -1;
+       if (string[str_ind++] != compare_str[outer_ind])
+           return -1;
 
        //If X or Y
-       if (outer_ind < 2) {
+       if (outer_ind < 2)
+       {
           //Store number of digits to look ahead
           digs = string[str_ind++] - 48;
 
           //Perform parsing of numbers
-          for (inner_ind = 0; inner_ind < digs; inner_ind++) {
-
+          for (inner_ind = 0; inner_ind < digs; inner_ind++)
+          {
              //Get scalar
              int scalar = 1;
-             for (scalar_ind = 0; scalar_ind < (digs - inner_ind - 1); scalar_ind++) scalar = scalar * 10;
+             for (scalar_ind = 0; scalar_ind < (digs - inner_ind - 1); scalar_ind++)
+                 scalar = scalar * 10;
 
              //Times scalar by char digit and store to temp buffer
              temp_xyz[outer_ind] = temp_xyz[outer_ind] + (string[str_ind++] - 48) * scalar;
           }
        }
        //If Z
-       else {
+       else
+       {
           //Store Z position in buffer - should be 0 if F or 1 if T
           if(string[str_ind] == 'T')
               temp_xyz[outer_ind] = 1;

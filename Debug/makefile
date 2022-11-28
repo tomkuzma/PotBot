@@ -16,6 +16,7 @@ ORDERED_OBJS += \
 "./dsp.obj" \
 "./main.obj" \
 "./servo.obj" \
+"./spi.obj" \
 "./uart.obj" \
 "../F2802x_Headers_BIOS.cmd" \
 "../TMS320F28027.cmd" \
@@ -161,8 +162,8 @@ PotBot.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(GEN_FILES__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "F2802x_GlobalVariableDefs.obj" "adc.obj" "dev_init.obj" "dsp.obj" "main.obj" "servo.obj" "uart.obj" 
-	-$(RM) "F2802x_GlobalVariableDefs.d" "adc.d" "dev_init.d" "dsp.d" "main.d" "servo.d" "uart.d" 
+	-$(RM) "F2802x_GlobalVariableDefs.obj" "adc.obj" "dev_init.obj" "dsp.obj" "main.obj" "servo.obj" "spi.obj" "uart.obj" 
+	-$(RM) "F2802x_GlobalVariableDefs.d" "adc.d" "dev_init.d" "dsp.d" "main.d" "servo.d" "spi.d" "uart.d" 
 	-$(RMDIR) $(GEN_MISC_DIRS__QUOTED)
 	-@echo 'Finished clean'
 	-@echo ' '

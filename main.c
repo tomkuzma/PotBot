@@ -14,8 +14,13 @@
 // Oct 23 2022 (yea i know, doing this last minute)
 // Mainly, adding another ISR for testing, and adding another idle thread
 //defines:
+
+int test_counter = 0 ;
+
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
+
+#define SWI_PERIOD 3 // How many instances of the PWM before the swi gets called
 
 #define SERVO_COUNT 3 // amount of servos
 #define SERVO_1 0 // Channel for servo 1
@@ -46,6 +51,7 @@ enum {
 #include "servo.h"
 #include "dsp.h"
 #include "uart.h"
+#include "spi.h"
 
 #include <xdc/std.h>
 #include <xdc/runtime/System.h>
@@ -103,13 +109,15 @@ float real_temp;
 //Select source for sampling (uart or pots)
 int sample_select;
 
+int swi_counter=0;
+
 /* ======== main ======== */
 Int main()
-{ 
-
+{
     //initialization:
     DeviceInit(); //initialize processor
     uart_init(); //initialize sci as uart
+    spi_init(); //Intialize all the spi stuff too
 
     //initialize global variables (clear the gah-bage)
     c2000_temp = 0;
@@ -131,6 +139,7 @@ Int main()
     float dc_min[8] = { 0.344, 0.073, 0.377, 0,0,0,0,0 }; // min duty cycle of servos
     float dc_max[8] = { 0.107, 0.319, 0.089, 0,0,0,0,0 }; // max duty cycle of servos
     servo_init(SERVO_COUNT, dc_min, dc_max); // initialize 2 servos
+    led_pwm_init(); // Initializes PWM for temperature
 
     //Initialize ADCs
     adc_init(3,true); //Initialize 3 ADC channels, and turn temperature sensor on
@@ -144,17 +153,33 @@ Int main()
 }
 
 
-void hwi_epwm_1_isr(void) {
+void hwi_epwm_1_isr(void)
+{
+    //Clear EPWM 1 flag
+    EPwm1Regs.ETCLR.bit.INT=1;
+
+    //Only call SWIs on every SWI_PERIOD intervals (probably 3 or 4)
+    swi_counter++;
+    if(swi_counter>SWI_PERIOD)
+        swi_counter=0;
+
     //Post routine for epwm 1
-    Swi_post(swi_epwm_1);
+    if(swi_counter==0)
+        Swi_post(swi_epwm_1);
 }
 
-void hwi_epwm_2_isr(void) {
+void hwi_epwm_2_isr(void)
+{
+    //Clear EPWM 2 flag
+    EPwm2Regs.ETCLR.bit.INT=1;
+
     //Post routine for epwm 2
-    Swi_post(swi_epwm_2);
+    if(swi_counter==0)
+        Swi_post(swi_epwm_2);
 }
 
-void hwi_uart_rx_isr(void) {
+void hwi_uart_rx_isr(void)
+{
     //Post SWI for receiving buffer (pi cam position)
     Swi_post(swi_uart_rx);
 }
@@ -166,9 +191,21 @@ void hwi_uart_rx_isr(void) {
  * FIRs, Ikines, then sets Servos
  *
  */
-void swi_epwm_1_isr(void) {
-    //Clear EPWM 1 flag
-    EPwm1Regs.ETCLR.bit.INT=1;
+void swi_epwm_1_isr(void)
+{
+    //If UART buffer is full, and stays full, reset the buffer
+    if(SciaRegs.SCIFFRX.bit.RXFFST = 4) {
+        EALLOW;
+        SciaRegs.SCICTL1.bit.SWRESET=0; // Reset SCI
+        SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
+
+        SciaRegs.SCIFFTX.bit.SCIRST = 0; // Reset SCI FFIO
+        SciaRegs.SCIFFTX.bit.SCIRST = 1; // Reset SCI FFIO
+
+        SciaRegs.SCIFFRX.bit.RXFIFORESET = 0; // Reset SCI FFIO
+        SciaRegs.SCIFFRX.bit.RXFIFORESET = 1; // Reset SCI FFIO
+        EDIS;
+    }
 
     //Insert next x and y value into input array, if UART
     if(sample_select==ADC_SAMPLE) {
@@ -225,17 +262,17 @@ void swi_epwm_1_isr(void) {
  * Takes care of z-axis servo positioning
  *
  */
-void swi_epwm_2_isr(void) {
-    //Clear EPWM 2 flag
-    EPwm2Regs.ETCLR.bit.INT=1;
-
+void swi_epwm_2_isr(void)
+{
     //Insert next z value into input array, if UART
-    if(sample_select==UART_SAMPLE) {
+    if(sample_select==UART_SAMPLE)
+    {
         z_array[z_counter] = z_uart_next;
         z_array[z_counter+Z_FIR_INPUT_SIZE] = z_uart_next;
     }
     //Insert next z into input array, if ADC
-    else {
+    else
+    {
         z_array[z_counter] = z_switch_next;
         z_array[z_counter+Z_FIR_INPUT_SIZE] = z_switch_next;
     }
@@ -276,15 +313,16 @@ void swi_epwm_2_isr(void) {
  * Receives tranmission of FIFO uart rx buffer holding xyz coordinates from pi cam
  *
  */
-void swi_uart_rx_isr(void) {    //Turn uart interrupt off
+void swi_uart_rx_isr(void)
+{    //Turn uart interrupt off
     SciaRegs.SCIFFRX.bit.RXFFINTCLR = 1; // Clear int flag for fifo
 
     // Take care of transmission
     uart_rx(&buffer_string, &buffer_string_ready);
 
     //If buffer ready, post task for parsing
-    if(buffer_string_ready==1) {
-
+    if(buffer_string_ready==1)
+    {
         //Dump into completed string to be parsed
         strcpy(completed_string, buffer_string);
 
@@ -307,9 +345,11 @@ void swi_uart_rx_isr(void) {    //Turn uart interrupt off
  * Then this function will parse through the string
  * Roughly 10us
  */
-void tsk_parse_rx_isr(void) {
+void tsk_parse_rx_isr(void)
+{
     //Infinite loop
-    while(1) {
+    while(1)
+    {
         //Complete function only when uart buffer is received
         Semaphore_pend(sem_parse, BIOS_WAIT_FOREVER);
 
@@ -326,8 +366,10 @@ void tsk_parse_rx_isr(void) {
  * Send transmission for request of PI cam coordinates
  * Roughly 30us
  */
-void tsk_uart_tx_isr(void) {
-    while(1) {
+void tsk_uart_tx_isr(void)
+{
+    while(1)
+    {
         //Pend semaphore when epwm routine is done
         Semaphore_pend(sem_uart_tx, BIOS_WAIT_FOREVER);
 
@@ -341,15 +383,19 @@ void tsk_uart_tx_isr(void) {
  * Send transmission to other c2000 coordinates and other info
  *
  */
-void tsk_spi_isr(void) {
-    while(1) {
+void tsk_spi_isr(void)
+{
+    while(1)
+    {
         //Pend SPI sem twice (epwm routine and uart tx sent)
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
 
-        //Set up string of vals
-
         //Send SPI Buffer with array of vals
+        spi_send_int(x, X_PARAM);
+        spi_send_int(y, Y_PARAM);
+        spi_send_int(joint_1/10, Q1_PARAM);
+        spi_send_int(joint_2/10, Q2_PARAM);
     }
 }
 
@@ -357,7 +403,8 @@ void tsk_spi_isr(void) {
 /*------------- IDLE ------------
  * Idle thread - keeps track of temperature *
  */
-void idle(void) {
+void idle(void)
+{
     //Sample button for Z next
     sample_select = GpioDataRegs.GPADAT.bit.GPIO6;
 
@@ -370,8 +417,7 @@ void idle(void) {
     //convert to Q15 and express it in system_printf (later used for lcd)
     real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
 
-    //Turn LED on if temp is above 50degs .. Else turn LED off
-    if(real_temp >= 50) GpioDataRegs.GPASET.bit.GPIO12;
-    else GpioDataRegs.GPACLEAR.bit.GPIO12;
-
+    //PWM set the LED
+    led_pwm_set(real_temp);
 }
+

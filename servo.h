@@ -34,7 +34,9 @@
 #ifndef SERVO_H_
 #define SERVO_H_
 
-#define SERVO_PERIOD 12813 // for 250hz
+#define SERVO_PERIOD 12813 // for 150Hz
+
+#define LED_PERIOD 1875
 
 #define SERVO_MAX 900   // max degrees
 #define SERVO_MIN -900     // min degrees
@@ -53,8 +55,13 @@
 #define SERVO_7_REG EPwm4Regs.CMPA.half.CMPA
 #define SERVO_8_REG EPwm4Regs.CMPB
 
-#include "F2807x_EPwm_defines.h"
+#ifndef TESTING_DEF
 #include "Headers/F2802x_device.h"
+#else
+#include "Peripheral_Headers/F2802x_device.h"
+#endif
+
+#include "F2807x_EPwm_defines.h"
 #include "adc.h"
 
 //****** servo_init ********//
@@ -93,5 +100,30 @@ void servo_set(uint16_t channel, int16_t input);
 //
 //**************************//
 void enable_epwm_interrupts(int servos);
+
+//****** led_pwm_init  ********//
+//
+// Initialize PWM 3 for LED, if need be
+//
+// Arguments:
+// None
+//
+// Return : None
+//
+//**************************//
+void led_pwm_init();
+
+//****** led_pwm_set  ********//
+//
+// Clears spurious ePWM flags and enables ePWM interrupts
+//
+// Arguments:
+// float temp - temperature of real_temp, maxes out at 120, mins out at 10
+//
+// Return : None
+//
+//**************************//
+void led_pwm_set(float temp);
+
 
 #endif /* SERVO_H_ */

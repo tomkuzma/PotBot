@@ -2,7 +2,6 @@
 
 servo.obj: ../servo.c
 servo.obj: ../servo.h
-servo.obj: ../F2807x_EPwm_defines.h
 servo.obj: ../Headers/F2802x_device.h
 servo.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/assert.h
 servo.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/_ti_config.h
@@ -34,13 +33,12 @@ servo.obj: ../Headers/F2802x_Spi.h
 servo.obj: ../Headers/F2802x_Sci.h
 servo.obj: ../Headers/F2802x_SysCtrl.h
 servo.obj: ../Headers/F2802x_XIntrupt.h
+servo.obj: ../F2807x_EPwm_defines.h
 servo.obj: ../adc.h
 
 ../servo.c:
 
 ../servo.h:
-
-../F2807x_EPwm_defines.h:
 
 ../Headers/F2802x_device.h:
 
@@ -103,6 +101,8 @@ C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/_stdint.h:
 ../Headers/F2802x_SysCtrl.h:
 
 ../Headers/F2802x_XIntrupt.h:
+
+../F2807x_EPwm_defines.h:
 
 ../adc.h:
 

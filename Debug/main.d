@@ -39,6 +39,7 @@ main.obj: ../dsp.h
 main.obj: ../uart.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/string.h
 main.obj: C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/xlocale/_string.h
+main.obj: ../spi.h
 main.obj: C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/std.h
 main.obj: C:/ti/bios_6_83_00_18/packages/ti/targets/std.h
 main.obj: C:/ti/bios_6_83_00_18/packages/ti/targets/C28_large.h
@@ -299,6 +300,8 @@ C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/sys/_stdint.h:
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/string.h:
 
 C:/ti/ccs1040/ccs/tools/compiler/ti-cgt-c2000_20.2.5.LTS/include/xlocale/_string.h:
+
+../spi.h:
 
 C:/ti/ccs1110/xdctools_3_62_01_16_core/packages/xdc/std.h:
 

@@ -11,11 +11,11 @@
 #ifndef DSP_H_
 #define DSP_H_
 
-#define N_MIN 10  //Min number of h[n] terms
-#define N_MAX 100 //Max number of h[n] terms
-#define MULTIPLY_FP_RESOLUTION_BITS 15 // for fixed point atan
-
+#ifndef TESTING_DEF
 #include "Headers/F2802x_device.h"
+#else
+#include "Peripheral_Headers/F2802x_device.h"
+#endif
 
 //Stuff for input arrays
 #define FIR_INPUT_SIZE N_MAX // Size of input array
@@ -23,6 +23,9 @@
 #define Z_FIR_INPUT_SIZE    10  // Number of terms to add for FIR
 #define Z_FIR_DIV           5   // Amount to divide Z average moving filter by
 
+#define N_MIN 10  //Min number of h[n] terms
+#define N_MAX 100 //Max number of h[n] terms
+#define MULTIPLY_FP_RESOLUTION_BITS 15 // for fixed point atan
 
 //****** moving_average ********//
 //
