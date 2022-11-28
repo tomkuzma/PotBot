@@ -20,7 +20,7 @@ int test_counter = 0 ;
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
 
-#define SWI_PERIOD 3 // How many instances of the PWM before the swi gets called
+#define SWI_PERIOD 4 // How many instances of the PWM before the swi gets called
 
 #define SERVO_COUNT 3 // amount of servos
 #define SERVO_1 0 // Channel for servo 1
@@ -370,11 +370,14 @@ void tsk_uart_tx_isr(void)
 {
     while(1)
     {
+        GpioDataRegs.GPBSET.bit.GPIO34=1;
         //Pend semaphore when epwm routine is done
         Semaphore_pend(sem_uart_tx, BIOS_WAIT_FOREVER);
 
         //Send TX
         uart_tx_char('r');
+
+        GpioDataRegs.GPBCLEAR.bit.GPIO34=1;
     }
 }
 
@@ -387,15 +390,20 @@ void tsk_spi_isr(void)
 {
     while(1)
     {
+
         //Pend SPI sem twice (epwm routine and uart tx sent)
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
+
+        GpioDataRegs.GPASET.bit.GPIO12=1;
 
         //Send SPI Buffer with array of vals
         spi_send_int(x, X_PARAM);
         spi_send_int(y, Y_PARAM);
         spi_send_int(joint_1/10, Q1_PARAM);
         spi_send_int(joint_2/10, Q2_PARAM);
+
+        GpioDataRegs.GPACLEAR.bit.GPIO12=1;
     }
 }
 
