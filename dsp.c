@@ -125,7 +125,7 @@ int ikine_float(int* joint1, int* joint2, long x_in, long y_in)
 
     //Offload variables from atan
     int joint1_temp = JOINT_FACTOR * atan((float) num1 / denom1);
-    int joint2_temp = JOINT_FACTOR * atan((float) sqrt_i32(num2) / sqrt_i32(denom2));
+    int joint2_temp = JOINT_FACTOR * atan(sqrt((float) num2/denom2));
 
     if(joint1_temp>900)
         joint1_temp -= JOINT_OFFSET;
