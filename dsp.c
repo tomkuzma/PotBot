@@ -89,7 +89,7 @@ void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y)
     }
 }
 
-/************ikine_fixed*************
+/************ikine_float*************
 *
 * Floating point implementation of inverse kinematics
 *
