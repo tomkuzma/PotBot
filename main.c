@@ -18,7 +18,7 @@
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
 
-#define SWI_PERIOD 1 // How many instances of the PWM before the swi gets called
+#define SWI_PERIOD 2 // How many instances of the PWM before the swi gets called
 
 #define SERVO_COUNT 4 // amount of servos
 #define SERVO_1 2 // Channel for servo 1
@@ -134,11 +134,11 @@ Int main()
     for (j = 0; j<UART_BUFF_SIZE; j++) buffer_string[j] = NULL;
 
     //Initialize SERVOs
-    float dc_min[8] = { 0, 0.503, 0.458, 0.097, 0,0,0,0 }; // min duty cycle of servos
-    float dc_max[8] = { 0, 0.119, 0.142, 0.426, 0,0,0,0 }; // max duty cycle of servos
+    float dc_min[8] = { 0, 0.252, 0.229, 0.048, 0,0,0,0 }; // min duty cycle of servos
+    float dc_max[8] = { 0, 0.059, 0.071, 0.213, 0,0,0,0 }; // max duty cycle of servos
 
     servo_init(SERVO_COUNT, dc_min, dc_max); // initialize 2 servos
-    //led_pwm_init(); // Initializes PWM for temperature
+    led_pwm_init(); // Initializes PWM for temperature
 
     //Initialize ADCs
     adc_init(3,true); //Initialize 3 ADC channels, and turn temperature sensor on
@@ -164,7 +164,7 @@ void hwi_epwm_1_isr(void)
 
     //Post routine for epwm 1
     if(swi_counter==0)
-        Swi_post(swi_epwm_2);
+        Swi_post(swi_epwm_1);
 }
 
 void hwi_epwm_2_isr(void)
@@ -174,7 +174,7 @@ void hwi_epwm_2_isr(void)
 
     //Post routine for epwm 2
     if(swi_counter==0)
-        Swi_post(swi_epwm_1);
+        Swi_post(swi_epwm_2);
 }
 
 void hwi_uart_rx_isr(void)
@@ -183,15 +183,62 @@ void hwi_uart_rx_isr(void)
     Swi_post(swi_uart_rx);
 }
 
+
 /******** swi_epwm_1_isr *******
+ *
+ * Priority 14
+ * Takes care of z-axis servo positioning
+ *
+ */
+void swi_epwm_1_isr(void)
+{
+    //Z  next
+    z=z_switch_next;
+
+    //Perform FIR on Z (input array 10, but moving average size 5), STore output value into Z
+    //moving_average(&z_array, &z, Z_FIR_INPUT_SIZE, z_counter);
+
+
+    //Assign a value to the servo
+    int16_t joint_z;
+    if(z == 0) SERVO_2_REG = 1115;
+    else SERVO_2_REG = 4830;
+
+    //Set servo to Z
+    //servo_set(SERVO_Z, joint_z);
+
+    //Take ADC values (sequentially)
+    int16_t adc_N, adc_X, adc_Y; //Adc result variables
+    adc_Y = adc_sample(ADC_POT_Y, true);
+    adc_X = adc_sample(ADC_POT_X, true);
+    adc_N = adc_sample(ADC_POT_N, true);
+
+    //Y-fit the ADC 0 sample into N
+    y_fit(&adc_N, &fir_N, ADC_MIN, ADC_MAX, N_MIN, N_MAX);
+
+    //Y-fit the ADC 1 and 2 samples into x_adc_next, and y_adc_next
+    y_fit(&adc_X, &x_adc_next, ADC_MIN, ADC_MAX, X_POS_MIN, X_POS_MAX); // x next
+    y_fit(&adc_Y, &y_adc_next, ADC_MIN, ADC_MAX, Y_POS_MIN, Y_POS_MAX); // y next
+
+    //Increment pointer for z FIR
+    if(z_counter==0) z_counter=Z_FIR_INPUT_SIZE-1; //Rollover
+    else z_counter--;
+}
+
+/******** swi_epwm_2_isr *******
  *
  * Priority 15
  * Takes care of xy
  * FIRs, Ikines, then sets Servos
  *
  */
-void swi_epwm_1_isr(void)
+void swi_epwm_2_isr(void)
 {
+
+    //Set servo 1 and 2 duty cycles
+    servo_set(SERVO_1, joint_1);
+    servo_set(SERVO_2, joint_2+SERVO_MIN); //-90 degrees to account for 90 deg offset being in joint 2 position brings you
+
     //If UART buffer is full, and stays full, reset the buffer
     if(SciaRegs.SCIFFRX.bit.RXFFOVF == 1) {
         EALLOW;
@@ -233,12 +280,12 @@ void swi_epwm_1_isr(void)
     //FIR y
     moving_average(&y_array, &y, fir_N, y_counter);
 
-    //Ikine kinematics
-    ikine(&joint_1, &joint_2, x, y);
+    GpioDataRegs.GPBSET.bit.GPIO34 = 1; //test
 
-    //Set servo 1 and 2 duty cycles
-    servo_set(SERVO_1, joint_1);
-    servo_set(SERVO_2, joint_2+SERVO_MIN); //-90 degrees to account for 90 deg offset being in joint 2 position brings you
+    //Ikine kinematics
+    ikine_float(&joint_1, &joint_2, x, y);
+
+    GpioDataRegs.GPBCLEAR.bit.GPIO34 = 1; //test
 
     //Increment pointer for x FIR
     if(x_counter==0) x_counter=FIR_INPUT_SIZE-1; //Rollover
@@ -253,55 +300,6 @@ void swi_epwm_1_isr(void)
 
     //Post UART tx sem
     Semaphore_post(sem_uart_tx);
-}
-
-/******** swi_epwm_2_isr *******
- *
- * Priority 14
- * Takes care of z-axis servo positioning
- *
- */
-void swi_epwm_2_isr(void)
-{
-    //Insert next z value into input array, if UART
-    if(sample_select==0)
-    {
-        z=z_uart_next;
-    }
-    //Insert next z into input array, if ADC
-    else
-    {
-        z=z_switch_next;
-    }
-
-    //Perform FIR on Z (input array 10, but moving average size 5), STore output value into Z
-    //moving_average(&z_array, &z, Z_FIR_INPUT_SIZE, z_counter);
-
-
-    //Assign a value to the servo
-    int16_t joint_z;
-    if(z == 0) SERVO_2_REG = 1115;
-    else SERVO_2_REG = 4830;
-
-    //Set servo to Z
-    //servo_set(SERVO_Z, joint_z);
-
-    //Take ADC values (sequentially)
-    int16_t adc_N, adc_X, adc_Y; //Adc result variables
-    adc_Y = adc_sample(ADC_POT_Y, true);
-    adc_X = adc_sample(ADC_POT_X, true);
-    adc_N = adc_sample(ADC_POT_N, true);
-
-    //Y-fit the ADC 0 sample into N
-    y_fit(&adc_N, &fir_N, ADC_MIN, ADC_MAX, N_MIN, N_MAX);
-
-    //Y-fit the ADC 1 and 2 samples into x_adc_next, and y_adc_next
-    y_fit(&adc_X, &x_adc_next, ADC_MIN, ADC_MAX, X_POS_MIN, X_POS_MAX); // x next
-    y_fit(&adc_Y, &y_adc_next, ADC_MIN, ADC_MAX, Y_POS_MIN, Y_POS_MAX); // y next
-
-    //Increment pointer for z FIR
-    if(z_counter==0) z_counter=Z_FIR_INPUT_SIZE-1; //Rollover
-    else z_counter--;
 }
 
 
@@ -414,6 +412,6 @@ void idle(void)
     real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
 
     //PWM set the LED
-    //led_pwm_set(real_temp);
+    led_pwm_set(real_temp);
 }
 

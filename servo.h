@@ -34,7 +34,7 @@
 #ifndef SERVO_H_
 #define SERVO_H_
 
-#define SERVO_PERIOD 9610 // for 150Hz
+#define SERVO_PERIOD 19220 // for 150Hz
 
 #define LED_PERIOD 1875
 

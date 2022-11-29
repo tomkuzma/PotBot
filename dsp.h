@@ -17,11 +17,16 @@
 #include "Peripheral_Headers/F2802x_device.h"
 #endif
 
+#include <math.h>
+
 //Stuff for input arrays
 #define FIR_INPUT_SIZE N_MAX // Size of input array
 
 #define Z_FIR_INPUT_SIZE    10  // Number of terms to add for FIR
 #define Z_FIR_DIV           5   // Amount to divide Z average moving filter by
+
+#define JOINT_FACTOR 1145.916 // Multiply both joints by this
+#define JOINT_OFFSET 1800 // if joint2 is negative, add this
 
 #define N_MIN 10  //Min number of h[n] terms
 #define N_MAX 100 //Max number of h[n] terms
@@ -55,7 +60,22 @@ void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start);
 // Return : None
 //
 //**************************//
-void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y);
+int ikine_float(int *joint1, int *joint2, float x_in, float y_in);
+
+/************ikine_fixed*************
+*
+* Floating point implementation of inverse kinematics
+*
+* Arguments:
+* int* joint1 - Angle in degrees output joint 1
+* int* joint2 - Angle in degrees output joint 2
+* int x_in - Coordinate input of x
+* int y_in - Coordinate input of y
+*
+* Return:
+* 1 if works, 0 if not worky
+* ***********************************/
+int ikine_float(int16_t *joint1, int16_t *joint2, float x_in, float y_in);
 
 //********** sqrt_i32 **********//
 //

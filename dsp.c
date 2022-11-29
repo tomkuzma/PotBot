@@ -22,7 +22,8 @@
 #include "dsp.h"
 
 
-void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start) {
+void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start)
+{
    // Pointer which holds input values
    int* p = NULL;
 
@@ -31,7 +32,8 @@ void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start) {
    int32_t temp_out_divided=0;
 
    //Iterate through input
-   for (p = in + start; p < in + (start + N); ++p) {
+   for (p = in + start; p < in + (start + N); ++p)
+   {
        temp_out += (int32_t) *p;
    }
 
@@ -55,9 +57,11 @@ void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start) {
 // Return : None
 //
 //**************************//
-void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y) {
+void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y)
+{
 
-    if(sqrt_i32(x*x + y*y) < 300) {
+    if(sqrt_i32(x*x + y*y) < 300)
+    {
 
         //For joint 1
         int32_t num1 = 300*y - sqrt_i32(90000*y*y - y*y*y*y + 90000*x*x - 2*x*x*y*y - x*x*x*x);
@@ -69,7 +73,8 @@ void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y) {
         }
         //The fixed-point atan seems to have a problem with going out of range, so if the denom or num are big,
         //Then bit shift both the num or denom so the function can handle it
-        if(num1 > 10000 || denom1 > 10000) {
+        if(num1 > 10000 || denom1 > 10000)
+        {
             num1 = num1 >> 6;
             denom1 = denom1 >> 6;
         }
@@ -82,6 +87,83 @@ void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y) {
         *joint2 = 20*atan2_fp(sqrt_i32(90000 - y*y - x*x),sqrt_i32(x*x + y*y));
 
     }
+}
+
+/************ikine_fixed*************
+*
+* Floating point implementation of inverse kinematics
+*
+* Arguments:
+* int* joint1 - Angle in degrees output joint 1
+* int* joint2 - Angle in degrees output joint 2
+* int x_in - Coordinate input of x
+* int y_in - Coordinate input of y
+*
+* Return:
+* 1 if works, 0 if not worky
+* ***********************************/
+float yf;
+float xf;
+int ikine_float(int *joint1, int *joint2, float x_in, float y_in)
+{
+    //Normalize to be 0-1
+    xf = (float) x_in / 300;
+    yf = (float) y_in / 300;
+
+    //Fix if singularity
+    if (x_in <= 0 && y_in <= 0)
+    {
+       return 0; // singularity, probably bad data. just return.
+    }
+
+    if (x_in > 300 || y_in > 300)
+    {
+       return 0; // invalid
+    }
+
+    //Fix if over 1
+    if ((x_in * x_in + y_in * y_in) > 90000)
+    {
+       //Can just use unit vectors
+       float radius = sqrt(xf * xf + yf * yf);
+       xf = xf / radius;
+       yf = yf / radius;
+    }
+
+    //Fix if over 1
+    if ((x_in*x_in + y_in*y_in)< 81) {
+       //Need to
+       float radius = sqrt(xf * xf + yf * yf);
+       xf = 0.03 * xf / radius;
+       yf = 0.03 * yf / radius;
+    }
+
+    //Factor values into numerators and denominators
+    float x2 = xf * xf;
+    float y2 = yf * yf;
+    float num1 = yf - sqrt(-x2 * x2 - 2 * x2 * y2 + x2 - y2 * y2 + y2);
+    float num2 = -x2 - y2 + 1;
+    float denom1 = x2 + xf + y2;
+    float denom2 = x2 + y2;
+
+    //Offload variables from atan
+    int joint1_temp = JOINT_FACTOR * atan(num1 / denom1);
+    int joint2_temp = JOINT_FACTOR * atan(sqrt(num2 / denom2));
+
+    if(joint1_temp>900)
+        joint1_temp -= JOINT_OFFSET;
+
+    //Check to make sure these values make sense
+    if(joint1_temp <= 900 && joint1_temp >= -900)
+    {
+        *joint1 = joint1_temp;
+    }
+    if(joint2_temp <= 1800 && joint2_temp >= 0)
+    {
+        *joint2 = joint2_temp;
+    }
+
+    return 1; // Works
 }
 
 //********** sqrt_i32 **********//
