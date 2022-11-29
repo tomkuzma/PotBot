@@ -28,6 +28,9 @@
 #define JOINT_FACTOR 1145.916 // Multiply both joints by this
 #define JOINT_OFFSET 1800 // if joint2 is negative, add this
 
+#define RADIUS_MIN 81 // minimum x^2 + y^2 val
+#define RADIUS_MAX 90000 // max x^2 + y^2 val
+
 #define N_MIN 10  //Min number of h[n] terms
 #define N_MAX 100 //Max number of h[n] terms
 #define MULTIPLY_FP_RESOLUTION_BITS 15 // for fixed point atan
@@ -60,22 +63,8 @@ void moving_average(int16_t *in, int16_t *out, int16_t N, int16_t start);
 // Return : None
 //
 //**************************//
-int ikine_float(int *joint1, int *joint2, float x_in, float y_in);
+int ikine_float(int* joint1, int* joint2, long x_in, long y_in);
 
-/************ikine_fixed*************
-*
-* Floating point implementation of inverse kinematics
-*
-* Arguments:
-* int* joint1 - Angle in degrees output joint 1
-* int* joint2 - Angle in degrees output joint 2
-* int x_in - Coordinate input of x
-* int y_in - Coordinate input of y
-*
-* Return:
-* 1 if works, 0 if not worky
-* ***********************************/
-int ikine_float(int16_t *joint1, int16_t *joint2, float x_in, float y_in);
 
 //********** sqrt_i32 **********//
 //

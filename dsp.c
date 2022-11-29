@@ -102,66 +102,39 @@ void ikine(int16_t *joint1, int16_t *joint2, int32_t x, int32_t y)
 * Return:
 * 1 if works, 0 if not worky
 * ***********************************/
-float yf;
-float xf;
-int ikine_float(int *joint1, int *joint2, float x_in, float y_in)
+int ikine_float(int* joint1, int* joint2, long x_in, long y_in)
 {
-    //Normalize to be 0-1
-    xf = (float) x_in / 300;
-    yf = (float) y_in / 300;
+     //Don't do this function is invalid coordinates (atan will give complex conjugate)
+     if ((x_in * x_in + y_in * y_in) > 90000)
+     {
+         return 0;
+     }
 
-    //Fix if singularity
-    if (x_in <= 0 && y_in <= 0)
-    {
-       return 0; // singularity, probably bad data. just return.
-    }
+     //Don't do this function is invalid coordinates (too close to post)
+     if ((x_in*x_in + y_in*y_in) < RADIUS_MIN) {
+         return 0;
+     }
 
-    if (x_in > 300 || y_in > 300)
-    {
-       return 0; // invalid
-    }
-
-    //Fix if over 1
-    if ((x_in * x_in + y_in * y_in) > 90000)
-    {
-       //Can just use unit vectors
-       float radius = sqrt(xf * xf + yf * yf);
-       xf = xf / radius;
-       yf = yf / radius;
-    }
-
-    //Fix if over 1
-    if ((x_in*x_in + y_in*y_in)< 81) {
-       //Need to
-       float radius = sqrt(xf * xf + yf * yf);
-       xf = 0.03 * xf / radius;
-       yf = 0.03 * yf / radius;
-    }
-
-    //Factor values into numerators and denominators
-    float x2 = xf * xf;
-    float y2 = yf * yf;
-    float num1 = yf - sqrt(-x2 * x2 - 2 * x2 * y2 + x2 - y2 * y2 + y2);
-    float num2 = -x2 - y2 + 1;
-    float denom1 = x2 + xf + y2;
-    float denom2 = x2 + y2;
+     //Factor values into numerators and denominators
+     long x2 = x_in * x_in;
+     long y2 = y_in * y_in;
+     long num1 = (long) 300 * y_in - sqrt_i32(-x2 * x2 - 2 * x2 * y2 + 90000*x2 - y2 * y2 + 90000*y2);
+     long num2 = (long)-x2 - y2 + 90000;
+     long denom1 = (long) x2 + 300*x_in + y2;
+     long denom2 = (long) x2 + y2;
 
     //Offload variables from atan
-    int joint1_temp = JOINT_FACTOR * atan(num1 / denom1);
-    int joint2_temp = JOINT_FACTOR * atan(sqrt(num2 / denom2));
+    int joint1_temp = JOINT_FACTOR * atan((float) num1 / denom1);
+    int joint2_temp = JOINT_FACTOR * atan((float) sqrt_i32(num2) / sqrt_i32(denom2));
 
     if(joint1_temp>900)
         joint1_temp -= JOINT_OFFSET;
 
-    //Check to make sure these values make sense
+    //Store values, they're good and return function as 1
     if(joint1_temp <= 900 && joint1_temp >= -900)
-    {
         *joint1 = joint1_temp;
-    }
     if(joint2_temp <= 1800 && joint2_temp >= 0)
-    {
         *joint2 = joint2_temp;
-    }
 
     return 1; // Works
 }
