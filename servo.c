@@ -305,7 +305,7 @@ void led_pwm_set(float temp)
         temp_int=10;
 
     //Change value from 10-120 to PWM vals
-    y_fit(&temp_int, &temp_pwm, 10, 120, 0, 1874);
+    y_fit(&temp_int, &temp_pwm, CELSIUS_MIN, CELSIUS_MAX, LED_PWM_LOW, LED_PWM_HIGH);
 
     //Store value in PWM
     EALLOW;

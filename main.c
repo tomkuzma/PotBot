@@ -195,17 +195,10 @@ void swi_epwm_1_isr(void)
     //Z  next
     z=z_switch_next;
 
-    //Perform FIR on Z (input array 10, but moving average size 5), STore output value into Z
-    //moving_average(&z_array, &z, Z_FIR_INPUT_SIZE, z_counter);
-
-
     //Assign a value to the servo
     int16_t joint_z;
-    if(z == 0) SERVO_2_REG = 1115;
-    else SERVO_2_REG = 4830;
-
-    //Set servo to Z
-    //servo_set(SERVO_Z, joint_z);
+    if(z == 0) servo_set(SERVO_Z, SERVO_MAX);
+    else servo_set(SERVO_Z, SERVO_MIN);
 
     //Take ADC values (sequentially)
     int16_t adc_N, adc_X, adc_Y; //Adc result variables
@@ -219,10 +212,6 @@ void swi_epwm_1_isr(void)
     //Y-fit the ADC 1 and 2 samples into x_adc_next, and y_adc_next
     y_fit(&adc_X, &x_adc_next, ADC_MIN, ADC_MAX, X_POS_MIN, X_POS_MAX); // x next
     y_fit(&adc_Y, &y_adc_next, ADC_MIN, ADC_MAX, Y_POS_MIN, Y_POS_MAX); // y next
-
-    //Increment pointer for z FIR
-    if(z_counter==0) z_counter=Z_FIR_INPUT_SIZE-1; //Rollover
-    else z_counter--;
 }
 
 /******** swi_epwm_2_isr *******
@@ -347,6 +336,7 @@ void tsk_parse_rx_isr(void)
 
         //Parse string and dump results into next x,y,z values for uart
         parse_rx(completed_string, &x_uart_next, &y_uart_next, &z_uart_next);
+
         //Once completed, post semaphore for storing values in buffer
         Semaphore_post(sem_spi);
     }
@@ -364,7 +354,6 @@ void tsk_uart_tx_isr(void)
         //Pend semaphore when epwm routine is done
         Semaphore_pend(sem_uart_tx, BIOS_WAIT_FOREVER);
 
-        //if()
         //Send TX
         uart_tx_char('r');
 
@@ -395,7 +384,7 @@ void tsk_spi_isr(void)
 
 
 /*------------- IDLE ------------
- * Idle thread - keeps track of temperature *
+ * Idle thread -git  keeps track of temperature *
  */
 void idle(void)
 {
@@ -408,7 +397,7 @@ void idle(void)
     //Get temperature sample
     c2000_temp = temp_sample(true); // Clear SOC and sample temp
 
-    //convert to Q15 and express it in system_printf (later used for led)
+    //make this bad boy celsius
     real_temp = (float) c2000_temp/32768 + (float) (c2000_temp%32768)/32768/2;
 
     //PWM set the LED
