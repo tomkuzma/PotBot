@@ -2,7 +2,7 @@
  * dsp.c
  *
  *  Created on: Nov. 14, 2022
- *      Author: Jimmy Bates, Tom Kuzma
+ *      Author: Jimmy Bates
  */
 
 //****** moving_average ********//
@@ -118,7 +118,7 @@ int ikine_float(int* joint1, int* joint2, long x_in, long y_in)
      //Factor values into numerators and denominators
      long x2 = x_in * x_in;
      long y2 = y_in * y_in;
-     long num1 = (long) 300 * y_in - sqrt_i32(-x2 * x2 - 2 * x2 * y2 + 90000*x2 - y2 * y2 + 90000*y2);
+     long num1 = (long) 300 * y_in - sqrt(-x2 * x2 - 2 * x2 * y2 + 90000*x2 - y2 * y2 + 90000*y2);
      long num2 = (long)-x2 - y2 + 90000;
      long denom1 = (long) x2 + 300*x_in + y2;
      long denom2 = (long) x2 + y2;

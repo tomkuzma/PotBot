@@ -2,7 +2,7 @@
  * adc.c
  *
  *  Created on: Nov. 9, 2022
- *      Author: Jimmy Bates, Tom Kuzma
+ *      Author: Jimmy Bates
  *
  * Initializes and runs ADC, including temperature
  * Refer to adc.h for more detailed description

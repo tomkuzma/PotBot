@@ -2,7 +2,7 @@
  * servo.h
  *
  *  Created on: Nov. 7, 2022
- *      Author: Jimmy Bates and Tom Kuzma
+ *      Author: Jimmy Bates
  *
  * Takes care of servos which requires:
  * Taking ADC values and loading them into PWM
@@ -34,7 +34,7 @@
 #ifndef SERVO_H_
 #define SERVO_H_
 
-#define SERVO_PERIOD 19220 // for 150Hz
+#define SERVO_PERIOD 9690 // for 100Hz
 
 #define LED_PERIOD 1875
 

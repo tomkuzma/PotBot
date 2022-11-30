@@ -1,24 +1,21 @@
-// Filename:            Lab2Idle_main.c
-//
-// Description:         This file has a main, timer, and idle function for SYS/BIOS application.
-//
-// Target:              TMS320F28027
-//
-// Author:              DR
-//
-// Date:                Oct. 11, 2022
-//
-//
-// Edited by : Jimmy Bates
-// A01035957 (Set T)
-// Oct 23 2022 (yea i know, doing this last minute)
-// Mainly, adding another ISR for testing, and adding another idle thread
-//defines:
+/********** PotBot main RTOS file******
+*
+* Authored by Jimmy Bates
+* November 30th 2022
+*
+* main.c
+* Takes care of all the RTOS stuff, mainly putting ISRs for the
+* SWIs, TSKs, and HWIs, and the IDLE
+*
+* Initializes all modules
+* SPI, UART, ADC, Servo (PWM), DSP
+*
+***************************************/
 
 #define xdc__strict //suppress typedef warnings
 #define COUNT_MAX 99 // Counts up to 99 and then resets to 0
 
-#define SWI_PERIOD 2 // How many instances of the PWM before the swi gets called
+#define SWI_PERIOD 3 // How many instances of the PWM before the swi gets called
 
 #define SERVO_COUNT 4 // amount of servos
 #define SERVO_1 2 // Channel for servo 1
@@ -34,10 +31,6 @@
 #define Y_POS_MIN 1 // make sure it don't collide
 #define X_POS_MAX 300 // make sure it don't collide
 #define Y_POS_MAX 300 // make sure it don't collide
-
-
-int asdf_test;
-int adsf_test_2;
 
 enum {
     ADC_SAMPLE,
@@ -69,6 +62,7 @@ extern void DeviceInit(void);
 extern const Swi_Handle swi_epwm_1; // Pends resources and sets servos, start SOCs
 extern const Swi_Handle swi_epwm_2; // take vals, start SOCs
 extern const Swi_Handle swi_uart_rx; // Receive UART buffer
+extern const Swi_Handle swi_uart_reset; // Reset UART buffer if stuck
 
 //task func prototypes
 extern const Task_Handle tsk_uart_tx; // Sends tx for cam pi coordinates
@@ -134,8 +128,8 @@ Int main()
     for (j = 0; j<UART_BUFF_SIZE; j++) buffer_string[j] = NULL;
 
     //Initialize SERVOs
-    float dc_min[8] = { 0, 0.252, 0.229, 0.048, 0,0,0,0 }; // min duty cycle of servos
-    float dc_max[8] = { 0, 0.059, 0.071, 0.213, 0,0,0,0 }; // max duty cycle of servos
+    float dc_min[8] = { 0, 0.252*2, 0.229*2, 0.048*2, 0,0,0,0 }; // min duty cycle of servos
+    float dc_max[8] = { 0, 0.059*2, 0.071*2, 0.213*2, 0,0,0,0 }; // max duty cycle of servos
 
     servo_init(SERVO_COUNT, dc_min, dc_max); // initialize 2 servos
     led_pwm_init(); // Initializes PWM for temperature
@@ -163,7 +157,7 @@ void hwi_epwm_1_isr(void)
         swi_counter=0;
 
     //Post routine for epwm 1
-    if(swi_counter==0)
+    if(swi_counter==SWI_PERIOD-1)
         Swi_post(swi_epwm_1);
 }
 
@@ -173,16 +167,45 @@ void hwi_epwm_2_isr(void)
     EPwm2Regs.ETCLR.bit.INT=1;
 
     //Post routine for epwm 2
-    if(swi_counter==0)
+    if(swi_counter==SWI_PERIOD-1) {
         Swi_post(swi_epwm_2);
+        Swi_post(swi_uart_reset);
+    }
 }
 
 void hwi_uart_rx_isr(void)
 {
+    GpioDataRegs.GPBSET.bit.GPIO34=1;
+
     //Post SWI for receiving buffer (pi cam position)
     Swi_post(swi_uart_rx);
+
+
+    GpioDataRegs.GPBCLEAR.bit.GPIO34=1;
+
 }
 
+/******** swi_uart_reset *******
+ *
+ * Priority 15
+ * Resets buffer if need be
+ *
+ */
+void swi_uart_reset_isr(void) {
+    //If UART buffer is full, and stays full, reset the buffer
+    if(SciaRegs.SCIFFRX.bit.RXFFOVF == 1) {
+        EALLOW;
+        SciaRegs.SCICTL1.bit.SWRESET=0; // Reset SCI
+        SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
+
+        SciaRegs.SCIFFTX.bit.SCIRST = 0; // Reset SCI FFIO
+        SciaRegs.SCIFFTX.bit.SCIRST = 1; // Reset SCI FFIO
+
+        SciaRegs.SCIFFRX.bit.RXFIFORESET = 0; // Reset SCI FFIO
+        SciaRegs.SCIFFRX.bit.RXFIFORESET = 1; // Reset SCI FFIO
+        EDIS;
+    }
+}
 
 /******** swi_epwm_1_isr *******
  *
@@ -212,6 +235,12 @@ void swi_epwm_1_isr(void)
     //Y-fit the ADC 1 and 2 samples into x_adc_next, and y_adc_next
     y_fit(&adc_X, &x_adc_next, ADC_MIN, ADC_MAX, X_POS_MIN, X_POS_MAX); // x next
     y_fit(&adc_Y, &y_adc_next, ADC_MIN, ADC_MAX, Y_POS_MIN, Y_POS_MAX); // y next
+
+    //Post SPI sem
+    Semaphore_post(sem_spi);
+
+    //Post UART tx sem
+    Semaphore_post(sem_uart_tx);
 }
 
 /******** swi_epwm_2_isr *******
@@ -227,20 +256,6 @@ void swi_epwm_2_isr(void)
     //Set servo 1 and 2 duty cycles
     servo_set(SERVO_1, joint_1);
     servo_set(SERVO_2, joint_2+SERVO_MIN); //-90 degrees to account for 90 deg offset being in joint 2 position brings you
-
-    //If UART buffer is full, and stays full, reset the buffer
-    if(SciaRegs.SCIFFRX.bit.RXFFOVF == 1) {
-        EALLOW;
-        SciaRegs.SCICTL1.bit.SWRESET=0; // Reset SCI
-        SciaRegs.SCICTL1.bit.SWRESET=1; // Reset SCI
-
-        SciaRegs.SCIFFTX.bit.SCIRST = 0; // Reset SCI FFIO
-        SciaRegs.SCIFFTX.bit.SCIRST = 1; // Reset SCI FFIO
-
-        SciaRegs.SCIFFRX.bit.RXFIFORESET = 0; // Reset SCI FFIO
-        SciaRegs.SCIFFRX.bit.RXFIFORESET = 1; // Reset SCI FFIO
-        EDIS;
-    }
 
     //Insert next x and y value into input array, if UART
     if(sample_select==ADC_SAMPLE) {
@@ -269,12 +284,8 @@ void swi_epwm_2_isr(void)
     //FIR y
     moving_average(&y_array, &y, fir_N, y_counter);
 
-    GpioDataRegs.GPBSET.bit.GPIO34 = 1; //test
-
     //Ikine kinematics
     ikine_float(&joint_1, &joint_2, x, y);
-
-    GpioDataRegs.GPBCLEAR.bit.GPIO34 = 1; //test
 
     //Increment pointer for x FIR
     if(x_counter==0) x_counter=FIR_INPUT_SIZE-1; //Rollover
@@ -283,12 +294,6 @@ void swi_epwm_2_isr(void)
     //Increment pointer for y FIR
     if(y_counter==0) y_counter=FIR_INPUT_SIZE-1; //Rollover
     else y_counter--;
-
-    //Post SPI sem
-    Semaphore_post(sem_spi);
-
-    //Post UART tx sem
-    Semaphore_post(sem_uart_tx);
 }
 
 
@@ -300,6 +305,7 @@ void swi_epwm_2_isr(void)
  */
 void swi_uart_rx_isr(void)
 {
+
     //Turn uart interrupt off
     SciaRegs.SCIFFRX.bit.RXFFINTCLR = 1; // Clear int flag for fifo
 
@@ -351,12 +357,18 @@ void tsk_uart_tx_isr(void)
 {
     while(1)
     {
+        GpioDataRegs.GPBSET.bit.GPIO34=1;
+        GpioDataRegs.GPBCLEAR.bit.GPIO34=1;
+
         //Pend semaphore when epwm routine is done
         Semaphore_pend(sem_uart_tx, BIOS_WAIT_FOREVER);
+
+        GpioDataRegs.GPBSET.bit.GPIO34=1;
 
         //Send TX
         uart_tx_char('r');
 
+        GpioDataRegs.GPBCLEAR.bit.GPIO34=1;
     }
 }
 
@@ -369,16 +381,17 @@ void tsk_spi_isr(void)
 {
     while(1)
     {
+
         //Pend SPI sem twice (epwm routine and uart tx sent)
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
         Semaphore_pend(sem_spi, BIOS_WAIT_FOREVER);
-
 
         //Send SPI Buffer with array of vals
         spi_send_int(x, X_PARAM);
         spi_send_int(y, Y_PARAM);
         spi_send_int(joint_1/10, Q1_PARAM);
         spi_send_int(joint_2/10, Q2_PARAM);
+
     }
 }
 

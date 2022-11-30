@@ -1,10 +1,12 @@
 /*
  * spi.h
  *
- *  Created on: Nov. 26, 2022
- *      Author: jbate
+ *  Created on: Nov. 7, 2022
+ *      Author: Jimmy Bates
+ *
+ * Takes care of SPI transfer to other C2000
+ * Has functionality for init and sending a string
  */
-
 #ifndef SPI_H_
 #define SPI_H_
 

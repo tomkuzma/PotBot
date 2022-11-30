@@ -10,13 +10,12 @@
 //
 // Date:                11Oct2022
 //Edited by Jimmy Bates
-//Oct 23 2022
-//Just added
-//
-//
-// Edited by JB
-// Nov 11 Rememberance day
-// Basically added the entire functionality
+//November 29 2022
+//Modified to fit PotBot
+//Mostly deleted and commented out pins that aren't being used
+//Transfered enable bits for enabling peripherals to other modules
+
+
 #include <Headers/F2802x_device.h>
 
 #pragma CODE_SECTION(InitFlash, "ramfuncs");

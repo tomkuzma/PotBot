@@ -2,7 +2,7 @@
  * dsp.h
  *
  *  Created on: Nov. 14, 2022
- *      Author: Jimmy Bates and Tom Kuzma
+ *      Author: Jimmy Bates
  *
  * FIR module based on variable moving average
  *

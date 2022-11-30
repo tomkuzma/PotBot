@@ -162,15 +162,11 @@ void servo_init(int servos, float dc_min[8], float dc_max[8])
 void servo_set(uint16_t channel, int16_t input) {
 
     //Vars for calculating servo position
-
-
     int16_t input_conv;
+
     //Convert value for PWM
-    //input_conv = ((uint32_t) __servos_c_pwm_max[channel] - (uint32_t) __servos_c_pwm_min[channel]) * ((uint32_t) input - (uint32_t) )/ (SERVO_MAX - SERVO-MIN) + (uint32_t) __servos_c_pwm_min[channel];
-    y_fit(&input, &input_conv, SERVO_MIN, SERVO_MAX, __servos_c_pwm_min[channel], __servos_c_pwm_max[channel]);
+     y_fit(&input, &input_conv, SERVO_MIN, SERVO_MAX, __servos_c_pwm_min[channel], __servos_c_pwm_max[channel]);
 
-
-    EALLOW;
     switch(channel) {
     case 0:
         SERVO_1_REG = input_conv;
@@ -199,9 +195,7 @@ void servo_set(uint16_t channel, int16_t input) {
     default:
         break;
     }
-    EDIS;
 
-    //*servo = servo_convert(degrees);
 
 }
 

@@ -2,7 +2,7 @@
  * uart.h
  *
  *  Created on: Nov. 16, 2022
- *      Author: Jimmy Bates and Tom Kuzma
+ *      Author: Jimmy Bates
  *
  * Takes care of setting uart up, and then
  * contains functions to use the uart -
