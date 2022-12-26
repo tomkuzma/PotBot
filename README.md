@@ -1,6 +1,8 @@
 # PotBot
 PotBot c2000 script w rtos
 
+Video of this project here: https://www.youtube.com/watch?v=uYmMaIRG5Y8
+
 Implements RTOS for this 3d printed SCARA robot:
 
 ![image](https://user-images.githubusercontent.com/70033294/209588567-66c6836c-4b16-437a-b930-1a8813799362.png)
